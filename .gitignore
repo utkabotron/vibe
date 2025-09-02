@@ -28,3 +28,6 @@ config/*.json
 # More secrets
 config/.env
 config/*.env
+
+# Local backups
+.git_backup_*
