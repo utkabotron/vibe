@@ -213,7 +213,7 @@ async def check_registration_code(update: Update, context: ContextTypes.DEFAULT_
         )
         return ConversationHandler.END
     
-    registration_code = config.get('registration_code', 'vibe')
+    registration_code = config.get('registration_code', 'vipe')
     
     if user_code.lower() != registration_code.lower():
         # Неверный код

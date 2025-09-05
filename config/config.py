@@ -20,7 +20,7 @@ if not TELEGRAM_TOKEN:
     raise ValueError("TELEGRAM_TOKEN is not set in environment variables")
 
 # Кодовое слово для регистрации
-REGISTRATION_CODE = os.getenv('REGISTRATION_CODE', 'vibe')  # По умолчанию 'vibe'
+REGISTRATION_CODE = os.getenv('REGISTRATION_CODE', 'vipe')  # По умолчанию 'vipe'
 
 # Google Sheets settings
 GOOGLE_SERVICE_ACCOUNT_PATH = os.getenv('GOOGLE_SERVICE_ACCOUNT_PATH')
