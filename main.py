@@ -5,9 +5,6 @@ This module initializes the bot, sets up handlers, and starts the polling.
 """
 import asyncio
 import logging
-import signal
-import sys
-from functools import partial
 
 from gspread.exceptions import SpreadsheetNotFound, APIError
 
@@ -106,35 +103,42 @@ async def track_sent_message(message, update: Update, context: ContextTypes.DEFA
         await track_message(update, context, message.message_id)
 
 
-async def init_sheet_service(app):
-    """Initialize sheet service and start cache refresh task."""
+async def post_init(app):
+    """Initialize sheet service after application is ready."""
     config = app.bot_data.get('config')
     sheet_service = SheetService()
-    
+
     # Initialize service and cache
     await sheet_service.initialize()
-    
+
     # Store in bot_data for handlers to access
     app.bot_data['sheet_service'] = sheet_service
-    
-    # Start cache refresh task
-    app.create_task(sheet_service.refresh_cache_periodically())
-    
+
+    # Start cache refresh task and store reference for cleanup
+    refresh_task = asyncio.create_task(sheet_service._background_cache_refresh())
+    app.bot_data['refresh_task'] = refresh_task
+
     logger.info("Sheet service initialized successfully")
-    return sheet_service
 
 
-async def shutdown(app, sheet_service):
-    """Shutdown the bot gracefully."""
+async def post_shutdown(app):
+    """Cleanup after application stops."""
     logger.info("Shutting down...")
-    
-    # Stop cache refresh task
+
+    # Cancel cache refresh task
+    refresh_task = app.bot_data.get('refresh_task')
+    if refresh_task and not refresh_task.done():
+        refresh_task.cancel()
+        try:
+            await refresh_task
+        except asyncio.CancelledError:
+            logger.info("Cache refresh task cancelled")
+
+    # Stop sheet service refresh task (backup)
+    sheet_service = app.bot_data.get('sheet_service')
     if sheet_service:
         await sheet_service.stop_refresh_task()
-    
-    # Stop the bot
-    await app.stop()
-    
+
     logger.info("Shutdown complete")
 
 
@@ -142,15 +146,21 @@ def main():
     """Start the bot."""
     # Load configuration
     config = load_config()
-    
+
     # Configure logging
     configure_logging()
-    
+
     # Уменьшаем уровень логирования для httpx, чтобы уменьшить количество сообщений
     logging.getLogger("httpx").setLevel(logging.WARNING)
-    
-    # Create the Application
-    application = Application.builder().token(config['telegram_token']).build()
+
+    # Create the Application with post_init and post_shutdown callbacks
+    application = (
+        Application.builder()
+        .token(config['telegram_token'])
+        .post_init(post_init)
+        .post_shutdown(post_shutdown)
+        .build()
+    )
     
     # Store config in bot_data for handlers to access
     application.bot_data['config'] = config
@@ -235,43 +245,13 @@ def main():
     
     # Add conversation handler to application
     application.add_handler(conv_handler)
-    
+
     # Register error handler
     application.add_error_handler(error_handler)
-    
-    # Set up signal handlers for graceful shutdown
-    loop = asyncio.get_event_loop()
-    sheet_service = None
-    
-    try:
-        # Initialize sheet service
-        sheet_service = loop.run_until_complete(init_sheet_service(application))
-        
-        # Register signal handlers - use platform-specific approach
-        if sys.platform != 'win32':
-            # Unix-like systems can use loop.add_signal_handler
-            for sig in (signal.SIGINT, signal.SIGTERM):
-                loop.add_signal_handler(
-                    sig, 
-                    lambda: asyncio.create_task(shutdown(application, sheet_service))
-                )
-        else:
-            # Windows needs to use signal.signal
-            def signal_handler(sig, frame):
-                loop.create_task(shutdown(application, sheet_service))
-                
-            for sig in (signal.SIGINT, signal.SIGTERM):
-                signal.signal(sig, signal_handler)
-        
-        # Start the Bot
-        logger.info("Starting Vibe Work Bot...")
-        application.run_polling()
-        
-    except Exception as e:
-        logger.error(f"Error starting bot: {e}")
-        if sheet_service:
-            loop.run_until_complete(sheet_service.stop_refresh_task())
-        sys.exit(1)
+
+    # Start the Bot - post_init and post_shutdown callbacks handle initialization and cleanup
+    logger.info("Starting Vibe Work Bot...")
+    application.run_polling()
 
 
 if __name__ == '__main__':
