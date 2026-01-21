@@ -29,3 +29,4 @@ key.txt
 # More secrets
 config/.env
 config/*.env
+.claude/
