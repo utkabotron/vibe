@@ -56,7 +56,7 @@ async def cancel(update: Update, _) -> int:
     """Cancel and end the conversation."""
     user = update.effective_user
     logger.info(f"User {user.id} canceled the conversation.")
-    
+
     if update.message:
         await update.message.reply_text(
             "Операция отменена. Используйте /start для начала новой."
@@ -66,7 +66,51 @@ async def cancel(update: Update, _) -> int:
         await update.callback_query.edit_message_text(
             "Операция отменена. Используйте /start для начала новой."
         )
-    
+
+    return ConversationHandler.END
+
+
+async def conversation_timeout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle conversation timeout - called when user is inactive for too long."""
+    user = update.effective_user
+    logger.info(f"Conversation timeout for user {user.id if user else 'unknown'}")
+
+    # Clear user data
+    context.user_data.clear()
+
+    # Try to notify the user
+    try:
+        if update.effective_chat:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="⏰ Сессия истекла из-за бездействия.\n\nНажмите /start чтобы начать заново."
+            )
+    except Exception as e:
+        logger.debug(f"Could not send timeout message: {e}")
+
+    return ConversationHandler.END
+
+
+async def fallback_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle any unmatched callback queries in the conversation."""
+    query = update.callback_query
+    if query:
+        await query.answer()
+        logger.warning(f"Unhandled callback in conversation: {query.data}")
+
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="⚠️ Эта сессия устарела.\n\nНажмите /start чтобы начать новый отчёт."
+        )
+
+        context.user_data.clear()
+        return ConversationHandler.END
+
     return ConversationHandler.END
 
 
@@ -247,13 +291,33 @@ def main():
         fallbacks=[
             CommandHandler("cancel", cancel),
             CallbackQueryHandler(cancel, pattern="^cancel$"),
+            CallbackQueryHandler(fallback_callback_handler),  # Catch any unhandled callbacks
         ],
         name="vibe_work_bot_conversation",
         persistent=False,
+        conversation_timeout=600,  # 10 minutes timeout
     )
     
     # Add conversation handler to application
     application.add_handler(conv_handler)
+
+    # Add fallback handler for callbacks outside of conversation (stale buttons)
+    async def global_callback_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle callbacks that are not part of any conversation."""
+        query = update.callback_query
+        if query:
+            await query.answer()
+            logger.info(f"Stale callback outside conversation: {query.data}")
+            try:
+                await query.message.delete()
+            except Exception:
+                pass
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="⚠️ Эта кнопка больше не активна.\n\nНажмите /start чтобы начать новый отчёт."
+            )
+
+    application.add_handler(CallbackQueryHandler(global_callback_fallback))
 
     # Register error handler
     application.add_error_handler(error_handler)
