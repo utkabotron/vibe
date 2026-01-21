@@ -151,12 +151,14 @@ class SheetService:
                 
                 # Load products and materials for each project/type
                 for project in self._cache['projects']:
-                    # Use 'id' or fallback to 'project_id' if it exists
-                    project_id = project.get('id', project.get('project_id', ''))
+                    # Use 'project_id' as primary, fallback to 'id'
+                    project_id = project.get('project_id', project.get('id', ''))
                     if project.get('active', 'true').lower() == 'true' and project_id:
                         # Convert project_id to string to ensure consistent lookup
                         str_project_id = str(project_id)
-                        self._cache['products'][str_project_id] = self._load_products_sync(project_id)
+                        products = self._load_products_sync(project_id)
+                        self._cache['products'][str_project_id] = products
+                        logger.debug(f"Loaded {len(products)} products for project {str_project_id}")
                 
                 # Handle paint material types with flexible field names
                 for paint_type in self._cache['paint_material_types']:
@@ -270,7 +272,10 @@ class SheetService:
         async with self._cache_lock:
             # Convert project_id to string to ensure consistent lookup
             str_project_id = str(project_id)
-            return self._cache['products'].get(str_project_id, [])
+            products = self._cache['products'].get(str_project_id, [])
+            if not products:
+                logger.warning(f"No products found for project_id={str_project_id}. Available keys: {list(self._cache['products'].keys())[:5]}")
+            return products
     
     async def get_labour_types(self) -> List[Dict[str, str]]:
         """Get list of labour types."""
