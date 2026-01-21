@@ -3,6 +3,15 @@ Main entry point for Vibe Work Bot.
 
 This module initializes the bot, sets up handlers, and starts the polling.
 """
+# Force IPv4 connections - must be before any networking imports
+# Some servers have IPv6 in DNS but can't reach IPv6 addresses, causing hangs
+import socket
+_original_getaddrinfo = socket.getaddrinfo
+def _getaddrinfo_ipv4_only(*args, **kwargs):
+    responses = _original_getaddrinfo(*args, **kwargs)
+    return [r for r in responses if r[0] == socket.AF_INET] or responses
+socket.getaddrinfo = _getaddrinfo_ipv4_only
+
 import asyncio
 import logging
 
