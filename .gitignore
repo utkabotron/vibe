@@ -24,6 +24,7 @@ build/
 
 # Secrets
 config/*.json
+key.txt
 
 # More secrets
 config/.env

@@ -22,7 +22,8 @@ from utils.bot_utils import (
     create_skip_keyboard,
     create_action_summary_keyboard,
     get_current_action,
-    track_message
+    track_message,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -58,9 +59,7 @@ async def select_paint_type(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     
     # Extract paint_type_id from callback data
     if not query.data.startswith(CALLBACK_PAINT_TYPE_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "paint_type_handler")
     
     paint_type_id = query.data[len(CALLBACK_PAINT_TYPE_PREFIX):]
     
@@ -156,9 +155,7 @@ async def select_paint_material(update: Update, context: ContextTypes.DEFAULT_TY
     
     # Extract paint_material_id from callback data
     if not query.data.startswith(CALLBACK_PAINT_MATERIAL_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "paint_material_handler")
     
     paint_material_id = query.data[len(CALLBACK_PAINT_MATERIAL_PREFIX):]
     

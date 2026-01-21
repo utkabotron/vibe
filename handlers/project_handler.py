@@ -8,7 +8,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
 
 from handlers.conversation_states import ConversationState, CALLBACK_PROJECT_PREFIX, CALLBACK_BACK
-from utils.bot_utils import create_products_keyboard, track_message, clean_chat_history
+from utils.bot_utils import create_products_keyboard, track_message, clean_chat_history, handle_stale_callback
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +47,7 @@ async def select_project(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     # Extract project_id from callback data
     if not query.data.startswith(CALLBACK_PROJECT_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        # Вместо редактирования сообщения отправляем новое
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Ошибка: неверный формат данных. Пожалуйста, начните снова."
-        )
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "project_handler")
     
     project_id = query.data[len(CALLBACK_PROJECT_PREFIX):]
     

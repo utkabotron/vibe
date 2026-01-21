@@ -22,7 +22,8 @@ from utils.bot_utils import (
     create_skip_keyboard,
     create_action_summary_keyboard,
     get_current_action,
-    track_message
+    track_message,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -58,9 +59,7 @@ async def select_material_type(update: Update, context: ContextTypes.DEFAULT_TYP
     
     # Extract material_type_id from callback data
     if not query.data.startswith(CALLBACK_MATERIAL_TYPE_PREFIX):
-        # Вместо ошибки, завершаем разговор и просим начать снова
-        await query.edit_message_text("Создание отчёта отменено. Используйте /start для создания нового отчёта.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "material_type_handler")
     
     material_type_id = query.data[len(CALLBACK_MATERIAL_TYPE_PREFIX):]
     
@@ -156,9 +155,7 @@ async def select_material(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     # Extract material_id from callback data
     if not query.data.startswith(CALLBACK_MATERIAL_PREFIX):
-        # Вместо ошибки, завершаем разговор и просим начать снова
-        await query.edit_message_text("Создание отчёта отменено. Используйте /start для создания нового отчёта.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "material_handler")
     
     material_id = query.data[len(CALLBACK_MATERIAL_PREFIX):]
     

@@ -19,7 +19,8 @@ from utils.bot_utils import (
     format_report_summary,
     clean_chat_history,
     track_message,
-    mark_report_message
+    mark_report_message,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -134,9 +135,7 @@ async def confirm_report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             )
             return ConversationState.CONFIRM_REPORT
     
-    logger.error(f"Invalid callback data: {query.data}")
-    await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-    return ConversationHandler.END
+    return await handle_stale_callback(update, context, "confirm_report")
 
 
 async def new_report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -161,6 +160,4 @@ async def new_report(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         from handlers.start_handler import start_report
         return await start_report(update, context)
     
-    logger.error(f"Invalid callback data: {query.data}")
-    await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-    return ConversationHandler.END
+    return await handle_stale_callback(update, context, "new_report")

@@ -603,7 +603,7 @@ async def mark_report_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def track_bot_message(update: Update, context: ContextTypes.DEFAULT_TYPE, message_id: int) -> None:
     """
     Автоматически отслеживает сообщения бота для последующего удаления.
-    
+
     Args:
         update: Update object
         context: CallbackContext
@@ -612,9 +612,45 @@ async def track_bot_message(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     # Инициализируем список, если его нет
     if 'message_ids_to_delete' not in context.user_data:
         context.user_data['message_ids_to_delete'] = []
-    
+
     # Проверяем, что сообщение не является отчетом
     if 'report_message_ids' not in context.user_data or message_id not in context.user_data['report_message_ids']:
         # Добавляем ID сообщения в список для удаления
         if message_id not in context.user_data['message_ids_to_delete']:
             context.user_data['message_ids_to_delete'].append(message_id)
+
+
+async def handle_stale_callback(update: Update, context: ContextTypes.DEFAULT_TYPE, handler_name: str) -> int:
+    """
+    Обрабатывает нажатие на устаревшую кнопку.
+    Удаляет сообщение с устаревшими кнопками и предлагает начать заново.
+
+    Args:
+        update: Update object
+        context: CallbackContext
+        handler_name: Имя хэндлера для логирования
+
+    Returns:
+        ConversationHandler.END
+    """
+    from telegram.ext import ConversationHandler
+
+    query = update.callback_query
+    logger.warning(f"Stale callback data in {handler_name}: {query.data}")
+
+    try:
+        # Удаляем сообщение с устаревшими кнопками
+        await query.message.delete()
+    except Exception as e:
+        logger.debug(f"Не удалось удалить устаревшее сообщение: {e}")
+
+    # Отправляем сообщение с предложением начать заново
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="⚠️ Эта сессия устарела.\n\nНажмите /start чтобы начать новый отчёт."
+    )
+
+    # Очищаем данные пользователя
+    context.user_data.clear()
+
+    return ConversationHandler.END

@@ -20,7 +20,8 @@ from utils.bot_utils import (
     create_action_summary_keyboard,
     get_current_action,
     parse_time_input,
-    track_message
+    track_message,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -56,9 +57,7 @@ async def select_labour_type(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     # Extract labour_type_id from callback data
     if not query.data.startswith(CALLBACK_LABOUR_TYPE_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "labour_handler")
     
     labour_type_id = query.data[len(CALLBACK_LABOUR_TYPE_PREFIX):]
     

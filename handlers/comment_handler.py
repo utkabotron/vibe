@@ -31,7 +31,8 @@ from utils.bot_utils import (
     create_skip_keyboard,
     create_action_summary_keyboard,
     create_confirm_keyboard,
-    track_message
+    track_message,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -149,10 +150,17 @@ async def enter_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             # Skip comment and go to confirm action
             current_action = get_current_action(context)
             current_action['comment'] = ""
-            
+
             return await confirm_action(update, context)
-    
-    # Handle comment input
+
+        else:
+            return await handle_stale_callback(update, context, "enter_comment")
+
+    # Handle comment input - check if message exists
+    if not update.message or not update.message.text:
+        logger.warning("No message text in enter_comment")
+        return ConversationState.ENTERING_COMMENT
+
     comment = update.message.text.strip()
     
     # Track the user's message for later deletion
@@ -439,6 +447,4 @@ async def add_another_action(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationState.CONFIRM_REPORT
     
     else:
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "add_another_action")

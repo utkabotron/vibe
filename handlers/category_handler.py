@@ -21,7 +21,8 @@ from utils.bot_utils import (
     create_labour_types_keyboard,
     create_paint_types_keyboard,
     create_material_types_keyboard,
-    get_current_action
+    get_current_action,
+    handle_stale_callback
 )
 
 logger = logging.getLogger(__name__)
@@ -69,9 +70,7 @@ async def select_category(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     # Extract category from callback data
     if not query.data.startswith(CALLBACK_CATEGORY_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "category_handler")
     
     category = query.data[len(CALLBACK_CATEGORY_PREFIX):]
     

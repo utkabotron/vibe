@@ -8,7 +8,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
 
 from handlers.conversation_states import ConversationState, CALLBACK_PRODUCT_PREFIX, CALLBACK_BACK
-from utils.bot_utils import create_category_keyboard, track_message, clean_chat_history
+from utils.bot_utils import create_category_keyboard, track_message, clean_chat_history, handle_stale_callback
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +55,7 @@ async def select_product(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     # Extract product_id from callback data
     if not query.data.startswith(CALLBACK_PRODUCT_PREFIX):
-        logger.error(f"Invalid callback data: {query.data}")
-        await query.edit_message_text("Ошибка: неверный формат данных. Пожалуйста, начните снова.")
-        return ConversationHandler.END
+        return await handle_stale_callback(update, context, "product_handler")
     
     product_id = query.data[len(CALLBACK_PRODUCT_PREFIX):]
     
