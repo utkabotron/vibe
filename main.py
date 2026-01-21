@@ -326,8 +326,30 @@ def main():
             await query.message.delete()
         except Exception:
             pass
-        # Trigger start handler
-        return await start(update, context)
+        # Preserve employee data, clear the rest
+        employee = context.user_data.get('employee')
+        context.user_data.clear()
+
+        # Fetch employee if not present
+        if not employee:
+            sheet_service = context.bot_data.get('sheet_service')
+            if sheet_service:
+                employee = await sheet_service.get_employee(update.effective_user.id)
+
+        if employee:
+            context.user_data['employee'] = employee
+            # Use fixed_start_report which handles callback queries properly
+            return await fixed_start_report(update, context)
+        else:
+            # User not registered - redirect to start for registration
+            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+            keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Вы не зарегистрированы. Используйте /start для регистрации."
+            )
+            return ConversationHandler.END
 
     application.add_handler(CallbackQueryHandler(restart_session_handler, pattern="^restart_session$"))
 
