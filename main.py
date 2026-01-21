@@ -129,6 +129,44 @@ async def fallback_callback_handler(update: Update, context: ContextTypes.DEFAUL
     return ConversationHandler.END
 
 
+async def restart_session_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle restart_session button - triggers new report flow.
+
+    This is an entry point for ConversationHandler, so it properly registers the conversation state.
+    """
+    query = update.callback_query
+    await query.answer()
+    # Delete the message with the button
+    try:
+        await query.message.delete()
+    except Exception:
+        pass
+    # Preserve employee data, clear the rest
+    employee = context.user_data.get('employee')
+    context.user_data.clear()
+
+    # Fetch employee if not present
+    if not employee:
+        sheet_service = context.bot_data.get('sheet_service')
+        if sheet_service:
+            employee = await sheet_service.get_employee(update.effective_user.id)
+
+    if employee:
+        context.user_data['employee'] = employee
+        # Use fixed_start_report which handles callback queries properly
+        return await fixed_start_report(update, context)
+    else:
+        # User not registered - redirect to start for registration
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Вы не зарегистрированы. Используйте /start для регистрации."
+        )
+        return ConversationHandler.END
+
+
 async def error_handler(update, context):
     """Log errors caused by Updates and provide user feedback."""
     error = context.error
@@ -237,6 +275,7 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", start),
+            CallbackQueryHandler(restart_session_handler, pattern="^restart_session$"),
         ],
         states={
             # Registration states
@@ -315,43 +354,6 @@ def main():
     
     # Add conversation handler to application
     application.add_handler(conv_handler)
-
-    # Handler for restart_session button - starts new conversation
-    async def restart_session_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle restart_session button - triggers /start flow."""
-        query = update.callback_query
-        await query.answer()
-        # Delete the message with the button
-        try:
-            await query.message.delete()
-        except Exception:
-            pass
-        # Preserve employee data, clear the rest
-        employee = context.user_data.get('employee')
-        context.user_data.clear()
-
-        # Fetch employee if not present
-        if not employee:
-            sheet_service = context.bot_data.get('sheet_service')
-            if sheet_service:
-                employee = await sheet_service.get_employee(update.effective_user.id)
-
-        if employee:
-            context.user_data['employee'] = employee
-            # Use fixed_start_report which handles callback queries properly
-            return await fixed_start_report(update, context)
-        else:
-            # User not registered - redirect to start for registration
-            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-            keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Вы не зарегистрированы. Используйте /start для регистрации."
-            )
-            return ConversationHandler.END
-
-    application.add_handler(CallbackQueryHandler(restart_session_handler, pattern="^restart_session$"))
 
     # Add fallback handler for callbacks outside of conversation (stale buttons)
     async def global_callback_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
