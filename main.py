@@ -78,12 +78,16 @@ async def conversation_timeout(update: Update, context: ContextTypes.DEFAULT_TYP
     # Clear user data
     context.user_data.clear()
 
-    # Try to notify the user
+    # Try to notify the user with inline button
     try:
         if update.effective_chat:
+            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+            keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="⏰ Сессия истекла из-за бездействия.\n\nНажмите /start чтобы начать заново."
+                text="⏰ Сессия истекла из-за бездействия.",
+                reply_markup=reply_markup
             )
     except Exception as e:
         logger.debug(f"Could not send timeout message: {e}")
@@ -103,9 +107,13 @@ async def fallback_callback_handler(update: Update, context: ContextTypes.DEFAUL
         except Exception:
             pass
 
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="⚠️ Эта сессия устарела.\n\nНажмите /start чтобы начать новый отчёт."
+            text="⚠️ Эта сессия устарела.",
+            reply_markup=reply_markup
         )
 
         context.user_data.clear()
@@ -301,6 +309,21 @@ def main():
     # Add conversation handler to application
     application.add_handler(conv_handler)
 
+    # Handler for restart_session button - starts new conversation
+    async def restart_session_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle restart_session button - triggers /start flow."""
+        query = update.callback_query
+        await query.answer()
+        # Delete the message with the button
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+        # Trigger start handler
+        return await start(update, context)
+
+    application.add_handler(CallbackQueryHandler(restart_session_handler, pattern="^restart_session$"))
+
     # Add fallback handler for callbacks outside of conversation (stale buttons)
     async def global_callback_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle callbacks that are not part of any conversation."""
@@ -312,9 +335,13 @@ def main():
                 await query.message.delete()
             except Exception:
                 pass
+            from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+            keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="⚠️ Эта кнопка больше не активна.\n\nНажмите /start чтобы начать новый отчёт."
+                text="⚠️ Эта кнопка больше не активна.",
+                reply_markup=reply_markup
             )
 
     application.add_handler(CallbackQueryHandler(global_callback_fallback))
