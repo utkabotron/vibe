@@ -380,14 +380,18 @@ async def confirm_action(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     # Если мы дошли до этого места, значит получили неизвестный callback_data
     # Завершаем разговор и просим начать снова
+    keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
     if query:
-        # Вместо логирования ошибки, просто завершаем разговор
-        await query.edit_message_text("Создание отчёта отменено. Используйте /start для создания нового отчёта.")
+        await query.edit_message_text(
+            "Создание отчёта отменено.",
+            reply_markup=reply_markup
+        )
     else:
-        # Если query отсутствует, отправляем новое сообщение
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Создание отчёта отменено. Используйте /start для создания нового отчёта."
+            text="Создание отчёта отменено.",
+            reply_markup=reply_markup
         )
     return ConversationHandler.END
 

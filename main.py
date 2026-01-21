@@ -52,21 +52,28 @@ from handlers.report_handler import confirm_report, new_report
 logger = logging.getLogger(__name__)
 
 
-async def cancel(update: Update, _) -> int:
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancel and end the conversation."""
     user = update.effective_user
     logger.info(f"User {user.id} canceled the conversation.")
 
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     if update.message:
         await update.message.reply_text(
-            "Операция отменена. Используйте /start для начала новой."
+            "Операция отменена.",
+            reply_markup=reply_markup
         )
     elif update.callback_query:
         await update.callback_query.answer()
         await update.callback_query.edit_message_text(
-            "Операция отменена. Используйте /start для начала новой."
+            "Операция отменена.",
+            reply_markup=reply_markup
         )
 
+    context.user_data.clear()
     return ConversationHandler.END
 
 

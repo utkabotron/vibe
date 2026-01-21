@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh:*)",
+      "Bash(sshpass -p 'eFSpPMVC#,9q?V' ssh -o StrictHostKeyChecking=no root@176.57.214.150 \"pm2 logs vibebot --lines 100 --nostream 2>/dev/null || cat ~/.pm2/logs/vibebot-out.log 2>/dev/null | tail -100\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git push:*)"
+    ]
+  }
+}

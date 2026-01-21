@@ -294,8 +294,11 @@ async def confirm_registration(update: Update, context: ContextTypes.DEFAULT_TYP
     name = context.user_data.get('registration_name')
     
     if not sheet_service or not telegram_id or not name:
+        keyboard = [[InlineKeyboardButton("🔄 Попробовать снова", callback_data="restart_session")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            "Ошибка регистрации. Пожалуйста, попробуйте снова с помощью команды /start."
+            "Ошибка регистрации. Пожалуйста, попробуйте снова.",
+            reply_markup=reply_markup
         )
         return ConversationHandler.END
     

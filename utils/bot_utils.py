@@ -644,10 +644,14 @@ async def handle_stale_callback(update: Update, context: ContextTypes.DEFAULT_TY
     except Exception as e:
         logger.debug(f"Не удалось удалить устаревшее сообщение: {e}")
 
-    # Отправляем сообщение с предложением начать заново
+    # Отправляем сообщение с кнопкой для начала заново
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="⚠️ Эта сессия устарела.\n\nНажмите /start чтобы начать новый отчёт."
+        text="⚠️ Эта сессия устарела.",
+        reply_markup=reply_markup
     )
 
     # Очищаем данные пользователя

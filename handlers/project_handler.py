@@ -29,19 +29,21 @@ async def select_project(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     # Handle back button
     if query.data == CALLBACK_BACK:
-        # Go back to start by ending the conversation
-        # The user can restart with /start command
+        keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            "Создание отчёта отменено. Используйте /start для создания нового отчёта."
+            "Создание отчёта отменено.",
+            reply_markup=reply_markup
         )
         return ConversationHandler.END
-    
+
     # Handle cancel button
     if query.data == "cancel":
-        # Go back to start by ending the conversation
-        # The user can restart with /start command
+        keyboard = [[InlineKeyboardButton("🔄 Начать заново", callback_data="restart_session")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            "Создание отчёта отменено. Используйте /start для создания нового отчёта."
+            "Создание отчёта отменено.",
+            reply_markup=reply_markup
         )
         return ConversationHandler.END
     
