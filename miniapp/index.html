@@ -9,48 +9,56 @@
 </head>
 <body>
     <div id="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-top">
-                <h1>Новый отчёт</h1>
-                <span id="sent-counter" class="sent-counter hidden"></span>
-            </div>
-
-            <!-- Compact badge shown after both selections -->
-            <div id="project-badge" class="project-badge hidden" onclick="editProjectProduct()">
-                <span id="project-name-badge">—</span>
-                <span class="separator">•</span>
-                <span id="product-name-badge">—</span>
-                <button class="edit-btn" aria-label="Изменить">✏️</button>
-            </div>
-        </header>
-
-        <!-- Project & Product Selection -->
-        <section id="project-selection-section" class="section">
-            <div class="section-title">Выберите проект</div>
-
-            <!-- Project Cards Grid -->
-            <div id="project-cards-grid" class="project-cards-grid">
-                <!-- Projects will be rendered here -->
-            </div>
-
-            <!-- Product Dropdown (appears after project selection) -->
-            <div id="product-field" class="field hidden" style="margin-top: 16px;">
-                <label>Изделие</label>
-                <div class="select-wrapper">
-                    <select id="product-select">
-                        <option value="">Выберите изделие</option>
-                    </select>
-                    <span class="select-icon" data-icon="chevronDown"></span>
+        <!-- Screen 1: Project Selection -->
+        <div id="screen-project" class="screen">
+            <header class="header">
+                <h1>Выберите проект</h1>
+            </header>
+            <section class="section">
+                <div id="project-cards-grid" class="project-cards-grid">
+                    <!-- Projects will be rendered here -->
                 </div>
-            </div>
+            </section>
+        </div>
 
-            <!-- Hidden select for compatibility -->
+        <!-- Screen 2: Product Selection -->
+        <div id="screen-product" class="screen hidden">
+            <header class="header">
+                <button class="back-btn-header" onclick="goBackToProjects()">
+                    ← Назад
+                </button>
+                <h1>Выберите изделие</h1>
+            </header>
+            <section class="section">
+                <div id="product-cards-grid" class="product-cards-grid">
+                    <!-- Products will be rendered here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Screen 3: Main Report -->
+        <div id="screen-report" class="screen hidden">
+            <header class="header">
+                <div class="header-top">
+                    <h1>Новый отчёт</h1>
+                    <span id="sent-counter" class="sent-counter hidden"></span>
+                </div>
+
+                <!-- Compact badge -->
+                <div id="project-badge" class="project-badge" onclick="editProjectProduct()">
+                    <span id="project-name-badge">—</span>
+                    <span class="separator">•</span>
+                    <span id="product-name-badge">—</span>
+                    <button class="edit-btn" aria-label="Изменить">✏️</button>
+                </div>
+            </header>
+
+            <!-- Hidden selects for compatibility -->
             <select id="project-select" style="display: none;"></select>
-        </section>
+            <select id="product-select" style="display: none;"></select>
 
-        <!-- Actions List -->
-        <section class="section">
+            <!-- Actions List -->
+            <section class="section">
             <div class="actions-header">
                 <span class="section-title">Действия</span>
                 <span class="actions-count" id="actions-count"></span>
@@ -213,25 +221,26 @@
             </div>
         </section>
 
-        <!-- Comment -->
-        <section class="section">
-            <div class="field">
-                <label>Комментарий <span class="optional">(необязательно)</span></label>
-                <textarea id="comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+            <!-- Comment -->
+            <section class="section">
+                <div class="field">
+                    <label>Комментарий <span class="optional">(необязательно)</span></label>
+                    <textarea id="comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                </div>
+            </section>
+
+            <!-- Pending Reports Indicator -->
+            <div id="pending-indicator" class="pending-indicator hidden">
+                <span class="pending-icon">⏳</span>
+                <span id="pending-count">0</span> неотправленных
             </div>
-        </section>
 
-        <!-- Pending Reports Indicator -->
-        <div id="pending-indicator" class="pending-indicator hidden">
-            <span class="pending-icon">⏳</span>
-            <span id="pending-count">0</span> неотправленных
-        </div>
-
-        <!-- Submit Button (for browser testing, hidden in Telegram) -->
-        <div id="submit-section" class="submit-section">
-            <button id="submit-btn" class="submit-btn" disabled>
-                Отправить в таблицу
-            </button>
+            <!-- Submit Button (for browser testing, hidden in Telegram) -->
+            <div id="submit-section" class="submit-section">
+                <button id="submit-btn" class="submit-btn" disabled>
+                    Отправить в таблицу
+                </button>
+            </div>
         </div>
     </div>
 
