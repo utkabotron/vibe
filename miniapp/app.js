@@ -764,7 +764,7 @@ function renderActions() {
         const subtitle = action.displayTime || `${action.quantity} ${action.unit}`;
 
         return `
-            <div class="action-card" style="animation: slideInUp ${200 + index * 50}ms var(--transition-spring) both;">
+            <div class="action-card">
                 <div class="action-icon" data-category="${categoryKey}">
                     ${icon}
                 </div>

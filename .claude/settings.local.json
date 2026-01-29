@@ -13,7 +13,8 @@
       "Bash(timeout:*)",
       "Bash(ping:*)",
       "Bash(ngrok http:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(node -c:*)"
     ]
   }
 }
