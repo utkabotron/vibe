@@ -6,7 +6,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pip install:*)",
+      "Bash(python miniapp_server.py:*)",
+      "Bash(curl:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(ngrok http:*)",
+      "Bash(git config:*)"
     ]
   }
 }
