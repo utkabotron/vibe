@@ -1,0 +1,591 @@
+/* === Reset & Base === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+}
+
+/* === Telegram Theme Variables Fallbacks === */
+:root {
+    --bg-color: var(--tg-theme-bg-color, #ffffff);
+    --text-color: var(--tg-theme-text-color, #000000);
+    --hint-color: var(--tg-theme-hint-color, #999999);
+    --link-color: var(--tg-theme-link-color, #2481cc);
+    --button-color: var(--tg-theme-button-color, #2481cc);
+    --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+    --secondary-bg: var(--tg-theme-secondary-bg-color, #f0f0f0);
+
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --spacing: 16px;
+    --spacing-sm: 8px;
+    --transition: 0.2s ease;
+}
+
+/* === App Container === */
+#app {
+    max-width: 100%;
+    min-height: 100%;
+    padding: var(--spacing);
+    padding-bottom: 100px; /* Space for MainButton */
+}
+
+/* === Header === */
+.header {
+    margin-bottom: var(--spacing);
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.sent-counter {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--button-text-color);
+    background: var(--button-color);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.sent-counter.hidden {
+    display: none;
+}
+
+/* === Sections === */
+.section {
+    background: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    padding: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
+.section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--hint-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* === Fields === */
+.field {
+    margin-bottom: var(--spacing);
+}
+
+.field:last-child {
+    margin-bottom: 0;
+}
+
+.field label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-color);
+}
+
+.field .optional {
+    color: var(--hint-color);
+    font-weight: 400;
+}
+
+/* === Select === */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '▼';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--hint-color);
+    pointer-events: none;
+}
+
+select {
+    width: 100%;
+    padding: 12px 36px 12px 12px;
+    font-size: 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: var(--bg-color);
+    color: var(--text-color);
+    appearance: none;
+    cursor: pointer;
+}
+
+select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* === Input & Textarea === */
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: var(--bg-color);
+    color: var(--text-color);
+    resize: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--hint-color);
+}
+
+/* === Actions List === */
+.actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing);
+}
+
+.actions-count {
+    font-size: 0.875rem;
+    color: var(--hint-color);
+}
+
+.actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* === Action Card === */
+.action-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: var(--border-radius-sm);
+}
+
+.action-card-content {
+    flex: 1;
+}
+
+.action-card-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.action-card-subtitle {
+    font-size: 0.875rem;
+    color: var(--hint-color);
+}
+
+.action-card-delete {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--hint-color);
+    font-size: 1.25rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background var(--transition);
+}
+
+.action-card-delete:hover {
+    background: var(--secondary-bg);
+    color: #ff3b30;
+}
+
+/* === Add Action Button === */
+.add-action-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--hint-color);
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    color: var(--hint-color);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.add-action-btn:hover {
+    border-color: var(--button-color);
+    color: var(--button-color);
+}
+
+.add-action-btn .plus {
+    font-size: 1.25rem;
+    margin-right: 4px;
+}
+
+/* === Action Form === */
+.action-form {
+    background: var(--bg-color);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+}
+
+.action-form.hidden {
+    display: none;
+}
+
+/* === Category Tabs === */
+.category-tabs {
+    display: flex;
+    background: var(--secondary-bg);
+    padding: 4px;
+    gap: 4px;
+}
+
+.category-tabs .tab {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition);
+}
+
+.category-tabs .tab.active {
+    background: var(--button-color);
+    color: var(--button-text-color);
+}
+
+/* === Form Content === */
+.form-content {
+    display: none;
+    padding: var(--spacing);
+}
+
+.form-content.active {
+    display: block;
+}
+
+.hint {
+    color: var(--hint-color);
+    font-size: 0.875rem;
+    text-align: center;
+    padding: var(--spacing);
+}
+
+/* === Time Picker === */
+.time-picker {
+    margin-top: var(--spacing);
+}
+
+.time-picker label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
+    color: var(--hint-color);
+}
+
+.time-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing);
+    flex-wrap: wrap;
+}
+
+.time-buttons.hours {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.time-buttons.minutes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.time-buttons button {
+    padding: 12px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: var(--secondary-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.time-buttons button:hover {
+    background: var(--button-color);
+    color: var(--button-text-color);
+    opacity: 0.8;
+}
+
+.time-buttons button.selected {
+    background: var(--button-color);
+    color: var(--button-text-color);
+}
+
+.time-display {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    padding: 12px;
+    background: var(--secondary-bg);
+    border-radius: var(--border-radius-sm);
+    text-align: center;
+}
+
+.time-display span {
+    color: var(--button-color);
+}
+
+/* === Form Actions === */
+.form-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing);
+    padding-top: 0;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity var(--transition);
+}
+
+.btn-primary {
+    background: var(--button-color);
+    color: var(--button-text-color);
+}
+
+.btn-secondary {
+    background: var(--secondary-bg);
+    color: var(--text-color);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* === Submit Section === */
+.submit-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--spacing);
+    padding-bottom: calc(var(--spacing) + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-color);
+    border-top: 1px solid var(--secondary-bg);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    background: var(--button-color);
+    color: var(--button-text-color);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--transition);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.submit-btn:not(:disabled):active {
+    opacity: 0.8;
+}
+
+/* Hide submit button in Telegram (MainButton is used instead) */
+.tg-webapp .submit-section {
+    display: none;
+}
+
+/* === Pending Indicator === */
+.pending-indicator {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff9500;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.pending-indicator.hidden {
+    display: none;
+}
+
+.pending-icon {
+    font-size: 1rem;
+}
+
+/* === Loading Overlay === */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity var(--transition);
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--secondary-bg);
+    border-top-color: var(--button-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    margin-top: var(--spacing);
+    color: var(--hint-color);
+}
+
+/* === Toast === */
+.toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    z-index: 200;
+    animation: slideUp 0.3s ease;
+}
+
+.toast.hidden {
+    display: none;
+}
+
+.toast.error {
+    background: #ff3b30;
+}
+
+.toast.success {
+    background: #34c759;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* === Empty State === */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing);
+    color: var(--hint-color);
+}
+
+/* === Error Screen === */
+.error-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    padding: var(--spacing);
+}
+
+.error-screen .error-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing);
+}
+
+.error-screen h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.error-screen p {
+    color: var(--hint-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* === Utilities === */
+.hidden {
+    display: none !important;
+}
+
+/* === Safe Area (iOS) === */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    #app {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom));
+    }
+}

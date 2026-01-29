@@ -241,8 +241,141 @@ vibe/
 ├── utils/
 │   ├── bot_utils.py            # Keyboards, formatting, chat management
 │   └── decorators.py           # Message tracking decorator
+├── miniapp/                     # Telegram Mini App
+│   ├── index.html              # Single-page app
+│   ├── style.css               # Telegram theme styles
+│   ├── app.js                  # Main application logic
+│   └── db.js                   # IndexedDB wrapper
+├── api/
+│   ├── __init__.py
+│   └── miniapp_api.py          # REST API for Mini App
+├── miniapp_server.py            # HTTP server for Mini App
+├── deploy/
+│   ├── miniapp.service         # Systemd service
+│   └── nginx-miniapp.conf      # Nginx config example
 └── requirements.txt
 ```
+
+## Mini App
+
+Telegram Mini App для создания отчётов с offline-поддержкой.
+
+### Архитектура
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Mini App   │────▶│  API Server │────▶│ Google      │
+│  (Browser)  │◀────│  (aiohttp)  │     │ Sheets      │
+└─────────────┘     └─────────────┘     └─────────────┘
+       │                   │
+       ▼                   ▼
+┌─────────────┐     ┌─────────────┐
+│  IndexedDB  │     │  Telegram   │
+│  (offline)  │     │  Bot API    │
+└─────────────┘     └─────────────┘
+```
+
+### Запуск локально
+
+```bash
+# Установить зависимости (добавлен aiohttp)
+pip install -r requirements.txt
+
+# Запустить Mini App сервер (порт 8080)
+python miniapp_server.py
+
+# Открыть в браузере
+# http://localhost:8080/miniapp
+```
+
+### API Endpoints
+
+```
+POST /api/miniapp/init
+  ← { initData: "telegram_init_string" }
+  → { user, references: { projects, products, labourTypes, ... } }
+
+POST /api/miniapp/submit
+  ← { initData, report: { projectId, productId, actions: [...] } }
+  → { success: true }
+  + отправляет карточку в чат бота
+
+GET /api/miniapp/sync
+  → { references: { ... } }
+```
+
+### Деплой Mini App на сервер
+
+```bash
+# 1. Скопировать systemd service
+sudo cp deploy/miniapp.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable miniapp
+sudo systemctl start miniapp
+
+# 2. Настроить nginx (требуется домен с HTTPS для Telegram)
+# Отредактировать deploy/nginx-miniapp.conf, заменить домен
+sudo cp deploy/nginx-miniapp.conf /etc/nginx/sites-available/miniapp
+sudo ln -s /etc/nginx/sites-available/miniapp /etc/nginx/sites-enabled/
+sudo certbot --nginx -d miniapp.yourdomain.com
+sudo nginx -t && sudo systemctl reload nginx
+
+# 3. Проверить
+curl https://miniapp.yourdomain.com/api/miniapp/sync
+```
+
+### Управление Mini App сервером
+
+```bash
+# Статус
+systemctl status miniapp
+
+# Перезапуск
+systemctl restart miniapp
+
+# Логи
+journalctl -u miniapp -f
+```
+
+### Регистрация Mini App в BotFather
+
+1. Открыть @BotFather
+2. Выбрать бота → Bot Settings → Menu Button
+3. Указать URL: `https://miniapp.yourdomain.com/miniapp`
+
+### IndexedDB структура
+
+```javascript
+// Store: references (кэш справочников)
+{
+  id: 'main',
+  projects: [...],
+  products: { projectId: [...] },
+  labourTypes: [...],
+  paintTypes: [...],
+  paintMaterials: { typeId: [...] },
+  materialTypes: [...],
+  materials: { typeId: [...] },
+  updatedAt: timestamp
+}
+
+// Store: drafts (черновики и pending отчёты)
+{
+  id: 'draft_xxx',
+  status: 'draft' | 'pending' | 'synced',
+  projectId, productId, projectName, productName,
+  actions: [...],
+  comment: '',
+  createdAt, syncedAt
+}
+```
+
+### Offline-режим
+
+1. Справочники кэшируются в IndexedDB
+2. При добавлении действия — сохраняется локально мгновенно
+3. При отправке без сети — помечается как `pending`
+4. При восстановлении связи — автоматическая синхронизация
 
 ## Common Gotchas
 

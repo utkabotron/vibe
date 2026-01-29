@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VIBE</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-row">
+                <h1>Новый отчёт</h1>
+                <span id="sent-counter" class="sent-counter hidden"></span>
+            </div>
+        </header>
+
+        <!-- Project & Product Selection -->
+        <section class="section">
+            <div class="field">
+                <label>Проект</label>
+                <div class="select-wrapper">
+                    <select id="project-select" disabled>
+                        <option value="">Загрузка...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label>Изделие</label>
+                <div class="select-wrapper">
+                    <select id="product-select" disabled>
+                        <option value="">Сначала выберите проект</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions List -->
+        <section class="section">
+            <div class="actions-header">
+                <span class="section-title">Действия</span>
+                <span class="actions-count" id="actions-count"></span>
+            </div>
+
+            <div id="actions-list" class="actions-list">
+                <!-- Actions will be rendered here -->
+            </div>
+
+            <!-- Add Action Button / Form -->
+            <div id="add-action-container">
+                <button id="add-action-btn" class="add-action-btn">
+                    <span class="plus">+</span> Добавить действие
+                </button>
+
+                <!-- Inline Form (hidden by default) -->
+                <div id="action-form" class="action-form hidden">
+                    <!-- Category Tabs -->
+                    <div class="category-tabs">
+                        <button class="tab active" data-category="labour">Работы</button>
+                        <button class="tab" data-category="paint">ЛКМ</button>
+                        <button class="tab" data-category="materials">Плита</button>
+                        <button class="tab" data-category="defect">Брак</button>
+                    </div>
+
+                    <!-- Labour Form -->
+                    <div id="form-labour" class="form-content active">
+                        <div class="field">
+                            <label>Вид работы</label>
+                            <div class="select-wrapper">
+                                <select id="labour-type-select">
+                                    <option value="">Выберите</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="time-picker">
+                            <label>Часы</label>
+                            <div class="time-buttons hours">
+                                <button data-value="1">1</button>
+                                <button data-value="2">2</button>
+                                <button data-value="3">3</button>
+                                <button data-value="4">4</button>
+                                <button data-value="5">5</button>
+                                <button data-value="6">6</button>
+                                <button data-value="7">7</button>
+                                <button data-value="8">8</button>
+                            </div>
+
+                            <label>Минуты</label>
+                            <div class="time-buttons minutes">
+                                <button data-value="15">15</button>
+                                <button data-value="30">30</button>
+                                <button data-value="45">45</button>
+                            </div>
+
+                            <div class="time-display">
+                                Время: <span id="time-value">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paint Form -->
+                    <div id="form-paint" class="form-content">
+                        <div class="field">
+                            <label>Тип ЛКМ</label>
+                            <div class="select-wrapper">
+                                <select id="paint-type-select">
+                                    <option value="">Выберите</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Материал</label>
+                            <div class="select-wrapper">
+                                <select id="paint-material-select" disabled>
+                                    <option value="">Сначала выберите тип</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Количество (л)</label>
+                            <input type="number" id="paint-quantity" step="0.1" min="0" placeholder="0.0">
+                        </div>
+                    </div>
+
+                    <!-- Materials Form -->
+                    <div id="form-materials" class="form-content">
+                        <div class="field">
+                            <label>Тип материала</label>
+                            <div class="select-wrapper">
+                                <select id="material-type-select">
+                                    <option value="">Выберите</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Материал</label>
+                            <div class="select-wrapper">
+                                <select id="material-select" disabled>
+                                    <option value="">Сначала выберите тип</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Количество</label>
+                            <input type="number" id="material-quantity" step="0.1" min="0" placeholder="0.0">
+                        </div>
+                    </div>
+
+                    <!-- Defect Form -->
+                    <div id="form-defect" class="form-content">
+                        <p class="hint">Брак будет добавлен с комментарием</p>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button id="cancel-action-btn" class="btn-secondary">Отмена</button>
+                        <button id="confirm-action-btn" class="btn-primary">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comment -->
+        <section class="section">
+            <div class="field">
+                <label>Комментарий <span class="optional">(необязательно)</span></label>
+                <textarea id="comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+            </div>
+        </section>
+
+        <!-- Pending Reports Indicator -->
+        <div id="pending-indicator" class="pending-indicator hidden">
+            <span class="pending-icon">⏳</span>
+            <span id="pending-count">0</span> неотправленных
+        </div>
+
+        <!-- Submit Button (for browser testing, hidden in Telegram) -->
+        <div id="submit-section" class="submit-section">
+            <button id="submit-btn" class="submit-btn" disabled>
+                Отправить в таблицу
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Загрузка...</p>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

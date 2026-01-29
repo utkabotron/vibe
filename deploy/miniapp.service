@@ -1,0 +1,21 @@
+[Unit]
+Description=VIBE Mini App Server
+After=network.target
+Wants=hosting-bot.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Hosting_bot
+ExecStart=/usr/bin/python3 miniapp_server.py
+Restart=always
+RestartSec=5
+Environment=MINIAPP_HOST=127.0.0.1
+Environment=MINIAPP_PORT=8080
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
