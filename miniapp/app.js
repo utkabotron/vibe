@@ -342,9 +342,9 @@ async function onProjectChange() {
         return;
     }
 
-    // Get project name
+    // Get project name (compare as strings)
     const project = state.references.projects.find(p =>
-        (p.project_id || p.id) === projectId
+        String(p.project_id || p.id) === String(projectId)
     );
 
     // Update draft
@@ -362,7 +362,7 @@ async function onProjectChange() {
     // Product change handler
     elements.productSelect.onchange = async () => {
         const productId = elements.productSelect.value;
-        const product = products.find(p => (p.product_id || p.id) === productId);
+        const product = products.find(p => String(p.product_id || p.id) === String(productId));
 
         await updateDraft({
             productId,
