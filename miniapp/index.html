@@ -9,87 +9,48 @@
 </head>
 <body>
     <div id="app">
-        <!-- Screen 1: Project Selection -->
-        <div id="screen-project" class="screen">
+        <!-- Single Screen -->
+        <div id="screen-main" class="screen">
             <header class="header">
-                <h1>Выберите проект</h1>
+                <h1>Новый отчёт</h1>
             </header>
-            <section class="section">
-                <div id="project-cards-grid" class="project-cards-grid">
-                    <!-- Projects will be rendered here -->
-                </div>
-            </section>
-        </div>
 
-        <!-- Screen 2: Product Selection -->
-        <div id="screen-product" class="screen hidden">
-            <header class="header">
-                <button class="back-btn-header" onclick="goBackToProjects()">
-                    ← Назад
+            <!-- Category Tabs -->
+            <div class="category-tabs">
+                <button class="tab active" data-category="labour">
+                    <span class="tab-label">Работы</span>
                 </button>
-                <h1>Выберите изделие</h1>
-            </header>
-            <section class="section">
-                <div id="product-cards-grid" class="product-cards-grid">
-                    <!-- Products will be rendered here -->
-                </div>
-            </section>
-        </div>
-
-        <!-- Screen 3: Main Report -->
-        <div id="screen-report" class="screen hidden">
-            <header class="header">
-                <div class="header-top">
-                    <h1>Новый отчёт</h1>
-                    <span id="sent-counter" class="sent-counter hidden"></span>
-                </div>
-
-                <!-- Compact badge -->
-                <div id="project-badge" class="project-badge" onclick="editProjectProduct()">
-                    <span id="project-name-badge">—</span>
-                    <span class="separator">•</span>
-                    <span id="product-name-badge">—</span>
-                    <button class="edit-btn" aria-label="Изменить">Изменить</button>
-                </div>
-            </header>
-
-            <!-- Hidden selects for compatibility -->
-            <select id="project-select" style="display: none;"></select>
-            <select id="product-select" style="display: none;"></select>
-
-            <!-- Actions List -->
-            <section class="section">
-            <div class="actions-header">
-                <span class="section-title">Действия</span>
-                <span class="actions-count" id="actions-count"></span>
+                <button class="tab" data-category="paint">
+                    <span class="tab-label">ЛКМ</span>
+                </button>
+                <button class="tab" data-category="materials">
+                    <span class="tab-label">Плита</span>
+                </button>
+                <button class="tab" data-category="defect">
+                    <span class="tab-label">Брак</span>
+                </button>
             </div>
 
-            <div id="actions-list" class="actions-list">
-                <!-- Actions will be rendered here -->
-            </div>
-
-            <!-- Action Form (always visible) -->
-            <div id="add-action-container">
-                <!-- Inline Form with Tabs -->
+            <!-- Action Form -->
+            <div id="action-form-container" class="section">
                 <div id="action-form" class="action-form">
-                    <!-- Category Tabs -->
-                    <div class="category-tabs">
-                        <button class="tab active" data-category="labour">
-                            <span class="tab-icon" data-icon="labour"></span>
-                            <span class="tab-label">Работы</span>
-                        </button>
-                        <button class="tab" data-category="paint">
-                            <span class="tab-icon" data-icon="paint"></span>
-                            <span class="tab-label">ЛКМ</span>
-                        </button>
-                        <button class="tab" data-category="materials">
-                            <span class="tab-icon" data-icon="materials"></span>
-                            <span class="tab-label">Плита</span>
-                        </button>
-                        <button class="tab" data-category="defect">
-                            <span class="tab-icon" data-icon="defect"></span>
-                            <span class="tab-label">Брак</span>
-                        </button>
+                    <!-- Common Fields (project, product) -->
+                    <div class="field">
+                        <label>Проект</label>
+                        <div class="select-wrapper">
+                            <select id="project-select">
+                                <option value="">Выберите проект</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Изделие</label>
+                        <div class="select-wrapper">
+                            <select id="product-select" disabled>
+                                <option value="">Сначала выберите проект</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Labour Form -->
@@ -100,7 +61,6 @@
                                 <select id="labour-type-select">
                                     <option value="">Выберите</option>
                                 </select>
-                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
 
@@ -148,7 +108,6 @@
                                 <select id="paint-type-select">
                                     <option value="">Выберите</option>
                                 </select>
-                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -157,7 +116,6 @@
                                 <select id="paint-material-select" disabled>
                                     <option value="">Сначала выберите тип</option>
                                 </select>
-                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -178,7 +136,6 @@
                                 <select id="material-type-select">
                                     <option value="">Выберите</option>
                                 </select>
-                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -187,7 +144,6 @@
                                 <select id="material-select" disabled>
                                     <option value="">Сначала выберите тип</option>
                                 </select>
-                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -210,23 +166,28 @@
 
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <button id="cancel-action-btn" class="btn-secondary">Отмена</button>
                         <button id="confirm-action-btn" class="btn-primary">Добавить</button>
                     </div>
                 </div>
             </div>
-        </section>
+
+            <!-- Actions List -->
+            <section class="section">
+                <div id="actions-list" class="actions-list">
+                    <!-- Actions will be rendered here -->
+                </div>
+
+                <!-- Add Action Button (shown after first action added) -->
+                <button id="add-action-btn" class="add-action-btn hidden">
+                    Добавить действие
+                </button>
+            </section>
 
 
-            <!-- Pending Reports Indicator -->
-            <div id="pending-indicator" class="pending-indicator hidden">
-                <span id="pending-count">0</span> неотправленных
-            </div>
-
-            <!-- Submit Button (for browser testing, hidden in Telegram) -->
-            <div id="submit-section" class="submit-section">
+            <!-- Submit Report Button -->
+            <div class="submit-section">
                 <button id="submit-btn" class="submit-btn" disabled>
-                    Отправить в таблицу
+                    Отправить отчёт
                 </button>
             </div>
         </div>
@@ -240,55 +201,6 @@
 
     <!-- Error Toast -->
     <div id="toast" class="toast hidden"></div>
-
-    <!-- Category Selection Modal -->
-    <div id="category-modal" class="modal hidden">
-        <div class="modal-backdrop" onclick="closeModal()"></div>
-        <div class="modal-content slide-up">
-            <div class="modal-header">
-                <h2>Выберите категорию</h2>
-                <button class="modal-close" onclick="closeModal()">×</button>
-            </div>
-
-            <div class="category-grid">
-                <button class="category-card" data-category="labour" onclick="selectCategory('labour')">
-                    <span class="category-label">Работы</span>
-                </button>
-                <button class="category-card" data-category="paint" onclick="selectCategory('paint')">
-                    <span class="category-label">ЛКМ</span>
-                </button>
-                <button class="category-card" data-category="materials" onclick="selectCategory('materials')">
-                    <span class="category-label">Плита</span>
-                </button>
-                <button class="category-card" data-category="defect" onclick="selectCategory('defect')">
-                    <span class="category-label">Брак</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Form Modal (per category) -->
-    <div id="action-modal" class="modal hidden">
-        <div class="modal-backdrop" onclick="closeModal()"></div>
-        <div class="modal-content slide-up">
-            <div class="modal-header">
-                <button class="back-btn" onclick="backToCategories()">←</button>
-                <h2 id="modal-title">Работы</h2>
-                <button class="modal-close" onclick="closeModal()">×</button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Dynamically loaded form content -->
-                <div id="dynamic-form-container"></div>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn-primary" id="modal-add-btn" onclick="addActionFromModal()">
-                    Добавить
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script src="icons.js"></script>
     <script src="db.js"></script>

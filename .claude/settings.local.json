@@ -14,7 +14,11 @@
       "Bash(ping:*)",
       "Bash(ngrok http:*)",
       "Bash(git config:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "WebSearch",
+      "WebFetch(domain:m3.material.io)",
+      "WebFetch(domain:docs.ton.org)",
+      "WebFetch(domain:www.reform.app)"
     ]
   }
 }

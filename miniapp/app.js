@@ -20,8 +20,6 @@ const state = {
     // Selected material data (for getting unit)
     selectedPaintMaterial: null,
     selectedMaterial: null,
-    // Screen management
-    currentScreen: 'project' // 'project' | 'product' | 'report'
 };
 
 // === DOM Elements ===
@@ -252,8 +250,8 @@ async function loadCurrentDraft() {
 function populateSelects() {
     if (!state.references) return;
 
-    // Render project cards
-    renderProjectCards();
+    // Populate project dropdown
+    populateProjectSelect();
 
     // Labour types
     const labourTypes = state.references.labourTypes || [];
@@ -298,6 +296,16 @@ function setupEventListeners() {
 
     // Confirm action
     elements.confirmActionBtn.addEventListener('click', addAction);
+
+    // Add action button (show form again)
+    const addActionBtn = document.getElementById('add-action-btn');
+    if (addActionBtn) {
+        addActionBtn.addEventListener('click', () => {
+            const formContainer = document.getElementById('action-form-container');
+            if (formContainer) formContainer.style.display = 'block';
+            addActionBtn.classList.add('hidden');
+        });
+    }
 
     // Category tabs
     elements.categoryTabs.forEach(tab => {
@@ -491,8 +499,14 @@ async function addAction() {
     // Render
     renderActions();
 
-    // Reset form (but keep it visible)
+    // Reset form and hide it
     resetActionForm();
+
+    const formContainer = document.getElementById('action-form-container');
+    const addBtn = document.getElementById('add-action-btn');
+
+    if (formContainer) formContainer.style.display = 'none';
+    if (addBtn) addBtn.classList.remove('hidden');
 
     updateMainButton();
 
@@ -506,6 +520,15 @@ async function addAction() {
 
 function buildCurrentAction() {
     const category = state.currentCategory;
+
+    // Validate project and product are selected
+    const projectId = elements.projectSelect.value;
+    const productId = elements.productSelect.value;
+
+    if (!projectId || !productId) return null;
+
+    const projectName = elements.projectSelect.options[elements.projectSelect.selectedIndex].text;
+    const productName = elements.productSelect.options[elements.productSelect.selectedIndex].text;
 
     switch (category) {
         case 'labour': {
@@ -538,7 +561,11 @@ function buildCurrentAction() {
                 quantity: String(totalHours),
                 unit: 'ч.',
                 displayTime: formatTime(finalHours, finalMinutes),
-                comment: comment
+                comment: comment,
+                project_id: projectId,
+                project_name: projectName,
+                product_id: productId,
+                product_name: productName
             };
         }
 
@@ -563,7 +590,11 @@ function buildCurrentAction() {
                 type_name: typeName,
                 quantity: quantity.toString(),
                 unit: unit,
-                comment: comment
+                comment: comment,
+                project_id: projectId,
+                project_name: projectName,
+                product_id: productId,
+                product_name: productName
             };
         }
 
@@ -588,7 +619,11 @@ function buildCurrentAction() {
                 type_name: typeName,
                 quantity: quantity.toString(),
                 unit: unit,
-                comment: comment
+                comment: comment,
+                project_id: projectId,
+                project_name: projectName,
+                product_id: productId,
+                product_name: productName
             };
         }
 
@@ -603,7 +638,11 @@ function buildCurrentAction() {
                 type_name: 'Брак',
                 quantity: '',
                 unit: '',
-                comment: comment
+                comment: comment,
+                project_id: projectId,
+                project_name: projectName,
+                product_id: productId,
+                product_name: productName
             };
         }
 
@@ -642,35 +681,38 @@ function renderDraft() {
 
     // Actions
     renderActions();
-
-    // Project/Product display
-    updateProjectDisplay();
-    updateMainButton();
 }
 
 function renderActions() {
     const actions = state.currentDraft?.actions || [];
 
-    elements.actionsCount.textContent = actions.length > 0 ? `(${actions.length})` : '';
+    // Update submit button state
+    if (elements.submitBtn) {
+        elements.submitBtn.disabled = actions.length === 0;
+    }
+
+    // Show/hide form and add button
+    const formContainer = document.getElementById('action-form-container');
+    const addBtn = document.getElementById('add-action-btn');
 
     if (actions.length === 0) {
-        elements.actionsList.innerHTML = `
-            <div class="empty-state">
-                <p class="empty-text">Нет добавленных действий</p>
-            </div>
-        `;
+        elements.actionsList.innerHTML = '';
+        if (formContainer) formContainer.style.display = 'block';
+        if (addBtn) addBtn.classList.add('hidden');
         return;
     }
 
     elements.actionsList.innerHTML = actions.map((action, index) => {
         const subtitle = action.displayTime || `${action.quantity} ${action.unit}`;
-        const commentHtml = action.comment ? `<p class="action-comment">${action.comment}</p>` : '';
+        const commentHtml = action.comment ? `<div class="action-row"><strong>Комментарий:</strong> ${action.comment}</div>` : '';
 
         return `
             <div class="action-card">
                 <div class="action-content">
-                    <p class="action-title">${action.subcategory_name}</p>
-                    <p class="action-value">${subtitle}</p>
+                    <div class="action-row"><strong>Проект:</strong> ${action.project_name || '—'}</div>
+                    <div class="action-row"><strong>Изделие:</strong> ${action.product_name || '—'}</div>
+                    <div class="action-row"><strong>${action.category}:</strong> ${action.subcategory_name}</div>
+                    <div class="action-row"><strong>Количество:</strong> ${subtitle}</div>
                     ${commentHtml}
                 </div>
                 <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">×</button>
@@ -741,15 +783,18 @@ async function submitReport() {
     }
 
     try {
+        // Get project/product from first action
+        const firstAction = draft.actions[0];
+
         // Prepare report data (use employee data from Users table)
         const report = {
             timestamp: new Date().toISOString(),
             employee_id: String(state.user?.employee_id || state.user?.telegram_id || ''),
             employee_name: state.user?.employee_name || state.user?.telegram_name || 'Unknown',
-            project_id: draft.projectId,
-            project_name: draft.projectName,
-            product_id: draft.productId,
-            product_name: draft.productName,
+            project_id: firstAction.project_id,
+            project_name: firstAction.project_name,
+            product_id: firstAction.product_id,
+            product_name: firstAction.product_name,
             actions: draft.actions
         };
 
@@ -761,19 +806,19 @@ async function submitReport() {
                 // Mark as synced
                 await vibeDB.markAsSynced(draft.id);
 
-                // Remember last project/product for convenience
-                state.lastProjectId = draft.projectId;
-                state.lastProductId = draft.productId;
-
-                // Create new draft with same project/product
-                const newDraft = await vibeDB.createDraft({
-                    projectId: draft.projectId,
-                    projectName: draft.projectName,
-                    productId: draft.productId,
-                    productName: draft.productName
-                });
+                // Create new empty draft
+                const newDraft = await vibeDB.createDraft({});
                 state.currentDraft = newDraft;
-                renderDraft();
+
+                // Clear form and show it
+                resetActionForm();
+                const formContainer = document.getElementById('action-form-container');
+                const addBtn = document.getElementById('add-action-btn');
+                if (formContainer) formContainer.style.display = 'block';
+                if (addBtn) addBtn.classList.add('hidden');
+
+                // Render empty list
+                renderActions();
 
                 // Haptic
                 if (tg?.HapticFeedback) {
@@ -782,11 +827,8 @@ async function submitReport() {
 
                 // Increment sent counter
                 state.reportsSentThisSession = (state.reportsSentThisSession || 0) + 1;
-                updateSentCounter();
 
-                showToast(`Отчёт #${state.reportsSentThisSession} отправлен!`, 'success');
-
-                // Don't close - allow creating more reports
+                showToast(`Отчёт отправлен!`, 'success');
 
             } else {
                 throw new Error('Failed to submit');
@@ -795,25 +837,24 @@ async function submitReport() {
             // Save as pending
             await vibeDB.markAsPending(draft.id);
 
-            // Remember last project/product
-            state.lastProjectId = draft.projectId;
-            state.lastProductId = draft.productId;
-
-            // Create new draft with same project/product
-            const newDraft = await vibeDB.createDraft({
-                projectId: draft.projectId,
-                projectName: draft.projectName,
-                productId: draft.productId,
-                productName: draft.productName
-            });
+            // Create new empty draft
+            const newDraft = await vibeDB.createDraft({});
             state.currentDraft = newDraft;
-            renderDraft();
+
+            // Clear form and show it
+            resetActionForm();
+            const formContainer = document.getElementById('action-form-container');
+            const addBtn = document.getElementById('add-action-btn');
+            if (formContainer) formContainer.style.display = 'block';
+            if (addBtn) addBtn.classList.add('hidden');
+
+            // Render empty list
+            renderActions();
 
             // Increment counter (pending also counts)
             state.reportsSentThisSession = (state.reportsSentThisSession || 0) + 1;
-            updateSentCounter();
 
-            showToast(`Отчёт #${state.reportsSentThisSession} сохранён. Отправится при подключении`, 'success');
+            showToast(`Отчёт сохранён. Отправится при подключении`, 'success');
             await checkPendingReports();
         }
 
@@ -1343,158 +1384,50 @@ function resetSimpleTimePicker() {
 }
 
 // === Project Cards Rendering ===
-function renderProjectCards() {
-    const container = document.getElementById('project-cards-grid');
-    if (!container) return;
+function populateProjectSelect() {
+    const select = elements.projectSelect;
+    if (!select) return;
 
     const projects = state.references?.projects || [];
 
-    if (projects.length === 0) {
-        container.innerHTML = '<p class="hint">Проекты не найдены</p>';
-        return;
-    }
+    select.innerHTML = '<option value="">Выберите проект</option>' +
+        projects.map(project => {
+            const projectId = String(project.project_id || project.id);
+            const projectName = project.project_name || project.name;
+            return `<option value="${projectId}">${projectName}</option>`;
+        }).join('');
 
-    container.innerHTML = projects.map(project => {
-        const projectId = String(project.project_id || project.id);
-        const projectName = project.project_name || project.name;
-        const isSelected = state.currentDraft?.projectId === projectId;
-
-        return `
-            <button class="project-card ${isSelected ? 'selected' : ''}"
-                    data-project-id="${projectId}"
-                    onclick="selectProject('${projectId}')">
-                ${projectName}
-            </button>
-        `;
-    }).join('');
+    // Enable product select when project changes
+    select.addEventListener('change', function() {
+        if (this.value) {
+            populateProductSelect(this.value);
+            elements.productSelect.disabled = false;
+        } else {
+            elements.productSelect.disabled = true;
+            elements.productSelect.innerHTML = '<option value="">Сначала выберите проект</option>';
+        }
+    });
 }
 
-function selectProject(projectId) {
-    const project = state.references.projects.find(p =>
-        String(p.project_id || p.id) === String(projectId)
-    );
+function populateProductSelect(projectId) {
+    const select = elements.productSelect;
+    if (!select) return;
 
-    if (!project) return;
+    const products = state.references?.products?.[projectId] || [];
 
-    // Haptic feedback first (instant)
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-    }
-
-    // Update state immediately for instant UI update
-    state.currentDraft.projectId = projectId;
-    state.currentDraft.projectName = project.project_name || project.name;
-    state.currentDraft.productId = null;
-    state.currentDraft.productName = null;
-
-    // Go to product selection screen
-    showScreen('product');
-    renderProductCards(projectId);
-
-    // Save to IndexedDB in background (async, non-blocking)
-    updateDraft({
-        projectId,
+    select.innerHTML = '<option value="">Выберите изделие</option>' +
+        products.map(product => {
+            const productId = String(product.product_id || product.id);
+            const productName = product.product_name || product.name;
+            return `<option value="${productId}">${productName}</option>`;
+        }).join('');
+}
         projectName: project.project_name || project.name,
         productId: null,
         productName: null
     });
 }
 
-function renderProductCards(projectId) {
-    const container = document.getElementById('product-cards-grid');
-    if (!container) return;
-
-    const products = state.references?.products?.[projectId] || [];
-
-    if (products.length === 0) {
-        container.innerHTML = '<p class="hint">Изделия не найдены</p>';
-        return;
-    }
-
-    container.innerHTML = products.map(product => {
-        const productId = String(product.product_id || product.id);
-        const productName = product.product_name || product.name;
-        const isSelected = state.currentDraft?.productId === productId;
-
-        return `
-            <button class="product-card ${isSelected ? 'selected' : ''}"
-                    data-product-id="${productId}"
-                    onclick="selectProduct('${productId}')">
-                ${productName}
-            </button>
-        `;
-    }).join('');
-}
-
-function selectProduct(productId) {
-    const projectId = state.currentDraft?.projectId;
-    if (!projectId) return;
-
-    const products = state.references.products?.[projectId] || [];
-    const product = products.find(p =>
-        String(p.product_id || p.id) === String(productId)
-    );
-
-    if (!product) return;
-
-    // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
-
-    // Update state immediately
-    state.currentDraft.productId = productId;
-    state.currentDraft.productName = product.product_name || product.name;
-
-    // Go to report screen
-    showScreen('report');
-    updateProjectBadge();
-    updateMainButton();
-
-    // Save to IndexedDB in background
-    updateDraft({
-        productId,
-        productName: product.product_name || product.name
-    });
-}
-
-// === Screen Management ===
-function showScreen(screenName) {
-    state.currentScreen = screenName;
-
-    // Hide all screens
-    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-
-    // Show requested screen
-    const screen = document.getElementById(`screen-${screenName}`);
-    if (screen) {
-        screen.classList.remove('hidden');
-        window.scrollTo(0, 0);
-    }
-}
-
-function goBackToProjects() {
-    showScreen('project');
-    renderProjectCards();
-
-    // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
-}
-
-function updateProjectBadge() {
-    const draft = state.currentDraft;
-    if (!draft?.projectId || !draft?.productId) return;
-
-    document.getElementById('project-name-badge').textContent = draft.projectName || draft.projectId;
-    document.getElementById('product-name-badge').textContent = draft.productName || draft.productId;
-}
-
-function editProjectProduct() {
-    showScreen('project');
-    renderProjectCards();
-}
 
 // === Project/Product Selection Modal (deprecated - keeping for compatibility) ===
 function showProjectSelectionModal() {
@@ -1620,34 +1553,5 @@ function changeProject() {
     showProjectSelectionModal();
 }
 
-function updateProjectDisplay() {
-    const draft = state.currentDraft;
-
-    if (draft?.projectId && draft?.productId) {
-        // Both selected - show report screen
-        showScreen('report');
-        updateProjectBadge();
-    } else if (draft?.projectId) {
-        // Only project selected - show product screen
-        showScreen('product');
-        renderProductCards(draft.projectId);
-    } else {
-        // Nothing selected - show project screen
-        showScreen('project');
-        renderProjectCards();
-    }
-}
-
 // === Make functions global for onclick ===
 window.deleteAction = deleteAction;
-window.closeModal = closeModal;
-window.backToCategories = backToCategories;
-window.selectCategory = selectCategory;
-window.addActionFromModal = addActionFromModal;
-window.adjustTime = adjustTime;
-window.showProjectSelectionModal = showProjectSelectionModal;
-window.changeProject = changeProject;
-window.selectProject = selectProject;
-window.selectProduct = selectProduct;
-window.editProjectProduct = editProjectProduct;
-window.goBackToProjects = goBackToProjects;
