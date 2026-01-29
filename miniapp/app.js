@@ -663,7 +663,6 @@ function renderActions() {
     if (actions.length === 0) {
         elements.actionsList.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">${getIcon('plus')}</div>
                 <p class="empty-text">Нет добавленных действий</p>
             </div>
         `;
@@ -671,24 +670,17 @@ function renderActions() {
     }
 
     elements.actionsList.innerHTML = actions.map((action, index) => {
-        const categoryKey = getCategoryKey(action.category);
-        const icon = getIcon(categoryKey);
         const subtitle = action.displayTime || `${action.quantity} ${action.unit}`;
         const commentHtml = action.comment ? `<p class="action-comment">${action.comment}</p>` : '';
 
         return `
             <div class="action-card">
-                <div class="action-icon" data-category="${categoryKey}">
-                    ${icon}
-                </div>
                 <div class="action-content">
                     <p class="action-title">${action.subcategory_name}</p>
                     <p class="action-value">${subtitle}</p>
                     ${commentHtml}
                 </div>
-                <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">
-                    ${getIcon('close')}
-                </button>
+                <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">×</button>
             </div>
         `;
     }).join('');
