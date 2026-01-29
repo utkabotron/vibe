@@ -74,8 +74,8 @@
                     <span class="plus">+</span> Добавить действие
                 </button>
 
-                <!-- Inline Form (deprecated - now using modal) -->
-                <div id="action-form" class="action-form hidden" style="display: none;">
+                <!-- Inline Form with Tabs -->
+                <div id="action-form" class="action-form hidden">
                     <!-- Category Tabs -->
                     <div class="category-tabs">
                         <button class="tab active" data-category="labour">
@@ -108,49 +108,33 @@
                             </div>
                         </div>
 
-                        <div class="time-picker">
-                            <div class="time-picker-header">
-                                <div class="time-icon-wrapper">
-                                    <span data-icon="clock"></span>
-                                </div>
-                                <div>
-                                    <label class="time-label">Время работы</label>
-                                    <p class="time-hint">Выберите часы и минуты</p>
-                                </div>
-                            </div>
+                        <div class="time-picker-compact">
+                            <label>Время работы</label>
 
-                            <div class="time-display-large">
-                                <span id="time-value-hours" class="time-segment">—</span>
-                                <span class="time-separator">:</span>
-                                <span id="time-value-minutes" class="time-segment">—</span>
-                                <span class="time-unit">ч:м</span>
-                            </div>
-
-                            <div class="time-section">
+                            <div class="time-section-compact">
                                 <div class="time-section-label">Часы</div>
-                                <div class="time-buttons hours">
-                                    <button data-value="1">1</button>
-                                    <button data-value="2">2</button>
-                                    <button data-value="3">3</button>
-                                    <button data-value="4">4</button>
-                                    <button data-value="5">5</button>
-                                    <button data-value="6">6</button>
-                                    <button data-value="7">7</button>
-                                    <button data-value="8">8</button>
+                                <div class="time-buttons-row">
+                                    <button class="time-btn" data-type="hours" data-value="1">1</button>
+                                    <button class="time-btn" data-type="hours" data-value="2">2</button>
+                                    <button class="time-btn" data-type="hours" data-value="3">3</button>
+                                    <button class="time-btn" data-type="hours" data-value="4">4</button>
+                                </div>
+                                <div class="time-buttons-row">
+                                    <button class="time-btn" data-type="hours" data-value="5">5</button>
+                                    <button class="time-btn" data-type="hours" data-value="6">6</button>
+                                    <button class="time-btn" data-type="hours" data-value="7">7</button>
+                                    <button class="time-btn" data-type="hours" data-value="8">8</button>
                                 </div>
                             </div>
 
-                            <div class="time-section">
+                            <div class="time-section-compact">
                                 <div class="time-section-label">Минуты</div>
-                                <div class="time-buttons minutes">
-                                    <button data-value="15">15</button>
-                                    <button data-value="30">30</button>
-                                    <button data-value="45">45</button>
+                                <div class="time-buttons-row">
+                                    <button class="time-btn" data-type="minutes" data-value="15">15</button>
+                                    <button class="time-btn" data-type="minutes" data-value="30">30</button>
+                                    <button class="time-btn" data-type="minutes" data-value="45">45</button>
+                                    <button class="time-btn" data-type="minutes" data-value="0">0</button>
                                 </div>
-                            </div>
-
-                            <div class="time-display">
-                                Время: <span id="time-value">—</span>
                             </div>
                         </div>
                     </div>

@@ -294,8 +294,8 @@ function setupEventListeners() {
     // Material type change
     elements.materialTypeSelect.addEventListener('change', onMaterialTypeChange);
 
-    // Add action button - now shows modal
-    elements.addActionBtn.addEventListener('click', showCategorySelection);
+    // Add action button - shows inline form
+    elements.addActionBtn.addEventListener('click', showActionForm);
 
     // Cancel action
     elements.cancelActionBtn.addEventListener('click', hideActionForm);
@@ -308,14 +308,11 @@ function setupEventListeners() {
         tab.addEventListener('click', () => switchCategory(tab.dataset.category));
     });
 
-    // Time buttons - Hours
-    elements.hoursButtons.forEach(btn => {
-        btn.addEventListener('click', () => selectTime('hours', btn));
-    });
-
-    // Time buttons - Minutes
-    elements.minutesButtons.forEach(btn => {
-        btn.addEventListener('click', () => selectTime('minutes', btn));
+    // Time buttons - compact version
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('time-btn')) {
+            selectTimeCompact(e.target);
+        }
     });
 
     // Comment change
@@ -391,33 +388,24 @@ async function onCommentChange() {
     await updateDraft({ comment: elements.comment.value });
 }
 
-// === Time Selection ===
-function selectTime(type, btn) {
+// === Time Selection - Compact Version ===
+function selectTimeCompact(btn) {
+    const type = btn.dataset.type; // 'hours' or 'minutes'
     const value = parseInt(btn.dataset.value);
-    const buttons = type === 'hours' ? elements.hoursButtons : elements.minutesButtons;
 
-    // Toggle selection
-    if (btn.classList.contains('selected')) {
-        btn.classList.remove('selected');
-        if (type === 'hours') {
-            state.selectedHours = null;
-        } else {
-            state.selectedMinutes = null;
-        }
+    // Deselect other buttons in the same group
+    const allButtons = document.querySelectorAll(`.time-btn[data-type="${type}"]`);
+    allButtons.forEach(b => b.classList.remove('selected'));
+
+    // Select this button
+    btn.classList.add('selected');
+
+    // Update state
+    if (type === 'hours') {
+        state.selectedHours = value;
     } else {
-        // Deselect others in group
-        buttons.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-
-        if (type === 'hours') {
-            state.selectedHours = value;
-        } else {
-            state.selectedMinutes = value;
-        }
+        state.selectedMinutes = value;
     }
-
-    updateTimeDisplay();
-    updateTimeLargeDisplay();
 
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -425,58 +413,10 @@ function selectTime(type, btn) {
     }
 }
 
-function updateTimeDisplay() {
-    const hours = state.selectedHours;
-    const minutes = state.selectedMinutes;
-
-    let display = '—';
-
-    if (hours && minutes) {
-        display = `${hours}ч ${minutes}м`;
-    } else if (hours) {
-        display = `${hours}ч`;
-    } else if (minutes) {
-        display = `${minutes}м`;
-    }
-
-    if (elements.timeValue) {
-        elements.timeValue.textContent = display;
-    }
-}
-
-function updateTimeLargeDisplay() {
-    const hoursEl = document.getElementById('time-value-hours');
-    const minutesEl = document.getElementById('time-value-minutes');
-
-    if (!hoursEl || !minutesEl) return;
-
-    const hours = state.selectedHours;
-    const minutes = state.selectedMinutes;
-
-    if (hours !== null) {
-        hoursEl.textContent = String(hours).padStart(2, '0');
-        hoursEl.classList.add('has-value');
-    } else {
-        hoursEl.textContent = '—';
-        hoursEl.classList.remove('has-value');
-    }
-
-    if (minutes !== null) {
-        minutesEl.textContent = String(minutes).padStart(2, '0');
-        minutesEl.classList.add('has-value');
-    } else {
-        minutesEl.textContent = '—';
-        minutesEl.classList.remove('has-value');
-    }
-}
-
 function resetTimeSelection() {
     state.selectedHours = null;
     state.selectedMinutes = null;
-    elements.hoursButtons.forEach(b => b.classList.remove('selected'));
-    elements.minutesButtons.forEach(b => b.classList.remove('selected'));
-    updateTimeDisplay();
-    updateTimeLargeDisplay();
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
 }
 
 // === Category Switching ===
@@ -521,15 +461,19 @@ function resetActionForm() {
     resetTimeSelection();
 
     // Reset selects
-    elements.labourTypeSelect.value = '';
-    elements.paintTypeSelect.value = '';
-    elements.paintMaterialSelect.innerHTML = '<option value="">Сначала выберите тип</option>';
-    elements.paintMaterialSelect.disabled = true;
-    elements.paintQuantity.value = '';
-    elements.materialTypeSelect.value = '';
-    elements.materialSelect.innerHTML = '<option value="">Сначала выберите тип</option>';
-    elements.materialSelect.disabled = true;
-    elements.materialQuantity.value = '';
+    if (elements.labourTypeSelect) elements.labourTypeSelect.value = '';
+    if (elements.paintTypeSelect) elements.paintTypeSelect.value = '';
+    if (elements.paintMaterialSelect) {
+        elements.paintMaterialSelect.innerHTML = '<option value="">Сначала выберите тип</option>';
+        elements.paintMaterialSelect.disabled = true;
+    }
+    if (elements.paintQuantity) elements.paintQuantity.value = '';
+    if (elements.materialTypeSelect) elements.materialTypeSelect.value = '';
+    if (elements.materialSelect) {
+        elements.materialSelect.innerHTML = '<option value="">Сначала выберите тип</option>';
+        elements.materialSelect.disabled = true;
+    }
+    if (elements.materialQuantity) elements.materialQuantity.value = '';
 }
 
 // === Add Action ===
@@ -558,6 +502,19 @@ async function addAction() {
     showToast('Действие добавлено', 'success');
 }
 
+// Restore inline form visibility
+function showActionForm() {
+    elements.addActionBtn.classList.add('hidden');
+    elements.actionForm.classList.remove('hidden');
+    resetActionForm();
+}
+
+function hideActionForm() {
+    elements.actionForm.classList.add('hidden');
+    elements.addActionBtn.classList.remove('hidden');
+    resetActionForm();
+}
+
 function buildCurrentAction() {
     const category = state.currentCategory;
 
@@ -567,9 +524,11 @@ function buildCurrentAction() {
             const typeId = select.value;
             if (!typeId) return null;
 
-            const hours = state.selectedHours || 0;
-            const minutes = state.selectedMinutes || 0;
-            if (hours === 0 && minutes === 0) return null;
+            const hours = state.selectedHours;
+            const minutes = state.selectedMinutes;
+
+            // Both hours and minutes must be selected
+            if (hours === null || minutes === null) return null;
 
             const typeName = select.options[select.selectedIndex].text;
             const totalHours = hours + minutes / 60;
