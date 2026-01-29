@@ -137,6 +137,11 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="field">
+                            <label>Комментарий <span class="optional">(необязательно)</span></label>
+                            <textarea id="labour-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                        </div>
                     </div>
 
                     <!-- Paint Form -->
@@ -162,6 +167,10 @@
                         <div class="field">
                             <label>Количество (л)</label>
                             <input type="number" id="paint-quantity" step="0.1" min="0" placeholder="0.0">
+                        </div>
+                        <div class="field">
+                            <label>Комментарий <span class="optional">(необязательно)</span></label>
+                            <textarea id="paint-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
                         </div>
                     </div>
 
@@ -189,11 +198,18 @@
                             <label>Количество</label>
                             <input type="number" id="material-quantity" step="0.1" min="0" placeholder="0.0">
                         </div>
+                        <div class="field">
+                            <label>Комментарий <span class="optional">(необязательно)</span></label>
+                            <textarea id="materials-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                        </div>
                     </div>
 
                     <!-- Defect Form -->
                     <div id="form-defect" class="form-content">
-                        <p class="hint">Брак будет добавлен с комментарием</p>
+                        <div class="field">
+                            <label>Комментарий</label>
+                            <textarea id="defect-comment" rows="2" placeholder="Опишите брак..." required></textarea>
+                        </div>
                     </div>
 
                     <!-- Form Actions -->
@@ -205,13 +221,6 @@
             </div>
         </section>
 
-            <!-- Comment -->
-            <section class="section">
-                <div class="field">
-                    <label>Комментарий <span class="optional">(необязательно)</span></label>
-                    <textarea id="comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
-                </div>
-            </section>
 
             <!-- Pending Reports Indicator -->
             <div id="pending-indicator" class="pending-indicator hidden">

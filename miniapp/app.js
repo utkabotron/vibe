@@ -315,9 +315,6 @@ function setupEventListeners() {
         }
     });
 
-    // Comment change
-    elements.comment.addEventListener('input', onCommentChange);
-
     // Online/offline
     window.addEventListener('online', () => {
         state.isOnline = true;
@@ -381,11 +378,6 @@ async function onMaterialTypeChange() {
             (m.material_id || m.id) === materialId
         ) || null;
     };
-}
-
-// === Comment Handling ===
-async function onCommentChange() {
-    await updateDraft({ comment: elements.comment.value });
 }
 
 // === Time Selection - Compact Version ===
@@ -460,7 +452,7 @@ function resetActionForm() {
     // Reset time
     resetTimeSelection();
 
-    // Reset selects
+    // Reset selects and inputs
     if (elements.labourTypeSelect) elements.labourTypeSelect.value = '';
     if (elements.paintTypeSelect) elements.paintTypeSelect.value = '';
     if (elements.paintMaterialSelect) {
@@ -474,6 +466,17 @@ function resetActionForm() {
         elements.materialSelect.disabled = true;
     }
     if (elements.materialQuantity) elements.materialQuantity.value = '';
+
+    // Reset comment fields
+    const labourComment = document.getElementById('labour-comment');
+    const paintComment = document.getElementById('paint-comment');
+    const materialsComment = document.getElementById('materials-comment');
+    const defectComment = document.getElementById('defect-comment');
+
+    if (labourComment) labourComment.value = '';
+    if (paintComment) paintComment.value = '';
+    if (materialsComment) materialsComment.value = '';
+    if (defectComment) defectComment.value = '';
 }
 
 // === Add Action ===
@@ -532,6 +535,7 @@ function buildCurrentAction() {
 
             const typeName = select.options[select.selectedIndex].text;
             const totalHours = hours + minutes / 60;
+            const comment = document.getElementById('labour-comment')?.value || '';
 
             return {
                 category: 'Работы',
@@ -540,7 +544,8 @@ function buildCurrentAction() {
                 type_name: 'Трудозатраты',
                 quantity: String(totalHours),
                 unit: 'ч.',
-                displayTime: formatTime(hours, minutes)
+                displayTime: formatTime(hours, minutes),
+                comment: comment
             };
         }
 
@@ -556,6 +561,7 @@ function buildCurrentAction() {
             const typeName = typeSelect.options[typeSelect.selectedIndex].text;
             const materialName = materialSelect.options[materialSelect.selectedIndex].text;
             const unit = state.selectedPaintMaterial?.unit || 'л';
+            const comment = document.getElementById('paint-comment')?.value || '';
 
             return {
                 category: 'ЛКМ',
@@ -563,7 +569,8 @@ function buildCurrentAction() {
                 subcategory_name: materialName,
                 type_name: typeName,
                 quantity: quantity.toString(),
-                unit: unit
+                unit: unit,
+                comment: comment
             };
         }
 
@@ -579,6 +586,7 @@ function buildCurrentAction() {
             const typeName = typeSelect.options[typeSelect.selectedIndex].text;
             const materialName = materialSelect.options[materialSelect.selectedIndex].text;
             const unit = state.selectedMaterial?.unit || '';
+            const comment = document.getElementById('materials-comment')?.value || '';
 
             return {
                 category: 'Плита',
@@ -586,18 +594,23 @@ function buildCurrentAction() {
                 subcategory_name: materialName,
                 type_name: typeName,
                 quantity: quantity.toString(),
-                unit: unit
+                unit: unit,
+                comment: comment
             };
         }
 
         case 'defect': {
+            const comment = document.getElementById('defect-comment')?.value || '';
+            if (!comment.trim()) return null; // Comment is required for defects
+
             return {
                 category: 'Брак',
                 subcategory: 'defect',
                 subcategory_name: 'Брак',
                 type_name: 'Брак',
                 quantity: '',
-                unit: ''
+                unit: '',
+                comment: comment
             };
         }
 
@@ -634,9 +647,6 @@ async function deleteAction(index) {
 function renderDraft() {
     if (!state.currentDraft) return;
 
-    // Comment
-    elements.comment.value = state.currentDraft.comment || '';
-
     // Actions
     renderActions();
 
@@ -664,6 +674,7 @@ function renderActions() {
         const categoryKey = getCategoryKey(action.category);
         const icon = getIcon(categoryKey);
         const subtitle = action.displayTime || `${action.quantity} ${action.unit}`;
+        const commentHtml = action.comment ? `<p class="action-comment">${action.comment}</p>` : '';
 
         return `
             <div class="action-card">
@@ -673,6 +684,7 @@ function renderActions() {
                 <div class="action-content">
                     <p class="action-title">${action.subcategory_name}</p>
                     <p class="action-value">${subtitle}</p>
+                    ${commentHtml}
                 </div>
                 <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">
                     ${getIcon('close')}
@@ -753,8 +765,7 @@ async function submitReport() {
             project_name: draft.projectName,
             product_id: draft.productId,
             product_name: draft.productName,
-            actions: draft.actions,
-            comment: draft.comment || ''
+            actions: draft.actions
         };
 
         if (state.isOnline) {
