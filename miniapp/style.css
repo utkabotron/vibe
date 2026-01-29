@@ -362,6 +362,28 @@ textarea::placeholder {
     margin-bottom: var(--space-md);
 }
 
+.add-action-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    border: 1px dashed var(--separator-opaque);
+    border-radius: var(--radius-md);
+    color: var(--accent-primary);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    margin-bottom: var(--space-lg);
+}
+
+.add-action-btn:active {
+    background: var(--state-hover);
+}
+
+.add-action-btn.hidden {
+    display: none;
+}
+
 /* === Action Card - Clean & Compact === */
 .action-card {
     display: flex;
@@ -409,6 +431,21 @@ textarea::placeholder {
     color: var(--text-secondary);
     margin-top: 4px;
     font-style: italic;
+}
+
+.action-row {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+
+.action-row:last-child {
+    margin-bottom: 0;
+}
+
+.action-row strong {
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 /* Removed: .action-meta, .action-separator, .action-category */
@@ -1007,91 +1044,9 @@ textarea::placeholder {
     font-weight: 600;
 }
 
-/* === Project Cards List === */
-.project-cards-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--separator-subtle);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
+/* Removed: project-cards-grid and product-cards-grid styles (now using dropdowns) */
 
-.project-card {
-    padding: 16px;
-    background: white;
-    cursor: pointer;
-    transition: all 150ms ease-out;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: none;
-    text-align: left;
-    position: relative;
-}
-
-.project-card:active {
-    background: var(--state-pressed);
-    transform: scale(0.98);
-}
-
-.project-card.selected {
-    background: var(--accent-primary);
-    color: white;
-    font-weight: 600;
-}
-
-.project-card.selected::after {
-    content: '';
-    display: none;
-}
-
-/* === Product Cards List (same style as projects) === */
-.product-cards-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--separator-subtle);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-
-.product-card {
-    padding: 16px;
-    background: white;
-    cursor: pointer;
-    transition: all 150ms ease-out;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: none;
-    text-align: left;
-    position: relative;
-}
-
-.product-card:active {
-    background: var(--state-pressed);
-    transform: scale(0.98);
-}
-
-.product-card.selected {
-    background: var(--accent-primary);
-    color: white;
-    font-weight: 600;
-}
-
-.product-card.selected::after {
-    content: '';
-    display: none;
-}
-
-/* === Back Button in Header === */
+/* === Back Button in Header (deprecated) === */
 .back-btn-header {
     background: transparent;
     border: none;
