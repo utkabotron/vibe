@@ -183,11 +183,7 @@ def create_miniapp_routes(sheet_service, bot_token: str, bot=None):
                 'actions': report.get('actions', [])
             }
 
-            # Add comment to each action if provided
-            comment = report.get('comment', '')
-            if comment:
-                for action in report_data['actions']:
-                    action['comment'] = comment
+            # Each action now has its own comment field (no global comment)
 
             # Save to Google Sheets
             success = await sheet_service.save_report(report_data)
