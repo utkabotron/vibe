@@ -296,8 +296,8 @@ function setupEventListeners() {
     // Material type change
     elements.materialTypeSelect.addEventListener('change', onMaterialTypeChange);
 
-    // Add action button
-    elements.addActionBtn.addEventListener('click', showActionForm);
+    // Add action button - now shows modal
+    elements.addActionBtn.addEventListener('click', showCategorySelection);
 
     // Cancel action
     elements.cancelActionBtn.addEventListener('click', hideActionForm);
@@ -380,9 +380,11 @@ async function onProjectChange() {
         });
 
         updateMainButton();
+        updateProjectDisplay();
     };
 
     updateMainButton();
+    updateProjectDisplay();
 }
 
 // === Paint/Material Type Handling ===
@@ -741,6 +743,7 @@ function renderDraft() {
     renderActions();
 
     updateMainButton();
+    updateProjectDisplay();
 }
 
 function renderActions() {
@@ -770,11 +773,7 @@ function renderActions() {
                 </div>
                 <div class="action-content">
                     <p class="action-title">${action.subcategory_name}</p>
-                    <div class="action-meta">
-                        <span class="action-category">${action.category}</span>
-                        <span class="action-separator">•</span>
-                        <span class="action-value">${subtitle}</span>
-                    </div>
+                    <p class="action-value">${subtitle}</p>
                 </div>
                 <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">
                     ${getIcon('close')}
@@ -1030,5 +1029,572 @@ function updateSentCounter() {
     }
 }
 
-// === Make deleteAction global for onclick ===
+// === Modal Management ===
+function showCategorySelection() {
+    const modal = document.getElementById('category-modal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+function selectCategory(category) {
+    // Close category modal
+    document.getElementById('category-modal').classList.add('hidden');
+
+    // Show action form modal
+    showActionFormModal(category);
+}
+
+function showActionFormModal(category) {
+    const modal = document.getElementById('action-modal');
+    const title = document.getElementById('modal-title');
+    const container = document.getElementById('dynamic-form-container');
+
+    // Set category
+    state.currentCategory = category;
+
+    // Update title
+    const categoryNames = {
+        'labour': 'Работы',
+        'paint': 'ЛКМ',
+        'materials': 'Плита',
+        'defect': 'Брак'
+    };
+    title.textContent = categoryNames[category] || 'Действие';
+
+    // Load form template
+    container.innerHTML = getFormTemplate(category);
+
+    // Reinitialize form elements
+    reinitializeFormElements();
+
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+function getFormTemplate(category) {
+    switch (category) {
+        case 'labour':
+            return `
+                <div class="field">
+                    <label>Вид работы</label>
+                    <div class="select-wrapper">
+                        <select id="modal-labour-type">
+                            <option value="">Выберите</option>
+                        </select>
+                        <span class="select-icon" data-icon="chevronDown"></span>
+                    </div>
+                </div>
+                <div id="modal-time-picker"></div>
+            `;
+        case 'paint':
+            return `
+                <div class="field">
+                    <label>Тип ЛКМ</label>
+                    <div class="select-wrapper">
+                        <select id="modal-paint-type">
+                            <option value="">Выберите</option>
+                        </select>
+                        <span class="select-icon" data-icon="chevronDown"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Материал</label>
+                    <div class="select-wrapper">
+                        <select id="modal-paint-material" disabled>
+                            <option value="">Сначала выберите тип</option>
+                        </select>
+                        <span class="select-icon" data-icon="chevronDown"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Количество (л)</label>
+                    <input type="number" id="modal-paint-quantity" step="0.1" min="0" placeholder="0.0">
+                </div>
+            `;
+        case 'materials':
+            return `
+                <div class="field">
+                    <label>Тип материала</label>
+                    <div class="select-wrapper">
+                        <select id="modal-material-type">
+                            <option value="">Выберите</option>
+                        </select>
+                        <span class="select-icon" data-icon="chevronDown"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Материал</label>
+                    <div class="select-wrapper">
+                        <select id="modal-material" disabled>
+                            <option value="">Сначала выберите тип</option>
+                        </select>
+                        <span class="select-icon" data-icon="chevronDown"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Количество</label>
+                    <input type="number" id="modal-material-quantity" step="0.1" min="0" placeholder="0.0">
+                </div>
+            `;
+        case 'defect':
+            return `<p class="hint">Брак будет добавлен с комментарием</p>`;
+        default:
+            return '';
+    }
+}
+
+function reinitializeFormElements() {
+    // Inject icons
+    injectIcons();
+
+    // Populate selects based on category
+    if (state.currentCategory === 'labour') {
+        const select = document.getElementById('modal-labour-type');
+        if (select) {
+            populateSelect(select, state.references?.labourTypes || [], 'work_id', 'work_name', 'Выберите вид работы');
+        }
+        // Add simplified time picker
+        const timePickerContainer = document.getElementById('modal-time-picker');
+        if (timePickerContainer) {
+            timePickerContainer.innerHTML = `
+                <div class="time-picker-simple">
+                    <label>Время работы</label>
+
+                    <div class="preset-grid">
+                        <button class="preset-btn" data-minutes="15">15м</button>
+                        <button class="preset-btn" data-minutes="30">30м</button>
+                        <button class="preset-btn" data-minutes="60">1ч</button>
+                        <button class="preset-btn" data-minutes="120">2ч</button>
+                        <button class="preset-btn" data-minutes="240">4ч</button>
+                        <button class="preset-btn" data-minutes="480">8ч</button>
+                    </div>
+
+                    <div class="time-display-simple">
+                        Выбрано: <strong id="time-display-value">—</strong>
+                    </div>
+
+                    <div class="stepper-controls">
+                        <button class="stepper-btn minus" onclick="adjustTime(-15)">
+                            <span>−</span> 15м
+                        </button>
+                        <button class="stepper-btn plus" onclick="adjustTime(15)">
+                            <span>+</span> 15м
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Add event listeners to preset buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const minutes = parseInt(this.dataset.minutes);
+                    selectTimePreset(minutes);
+                });
+            });
+        }
+    } else if (state.currentCategory === 'paint') {
+        const typeSelect = document.getElementById('modal-paint-type');
+        if (typeSelect) {
+            populateSelect(typeSelect, state.references?.paintTypes || [], 'type_id', 'type_name', 'Выберите тип ЛКМ');
+            typeSelect.onchange = () => {
+                const typeId = typeSelect.value;
+                const materialSelect = document.getElementById('modal-paint-material');
+                if (materialSelect) {
+                    const materials = state.references.paintMaterials?.[typeId] || [];
+                    populateSelect(materialSelect, materials, 'material_id', 'material_name', 'Выберите материал');
+                    materialSelect.onchange = () => {
+                        const materialId = materialSelect.value;
+                        state.selectedPaintMaterial = materials.find(m => (m.material_id || m.id) === materialId) || null;
+                    };
+                }
+            };
+        }
+    } else if (state.currentCategory === 'materials') {
+        const typeSelect = document.getElementById('modal-material-type');
+        if (typeSelect) {
+            populateSelect(typeSelect, state.references?.materialTypes || [], 'type_id', 'type_name', 'Выберите тип материала');
+            typeSelect.onchange = () => {
+                const typeId = typeSelect.value;
+                const materialSelect = document.getElementById('modal-material');
+                if (materialSelect) {
+                    const materials = state.references.materials?.[typeId] || [];
+                    populateSelect(materialSelect, materials, 'material_id', 'material_name', 'Выберите материал');
+                    materialSelect.onchange = () => {
+                        const materialId = materialSelect.value;
+                        state.selectedMaterial = materials.find(m => (m.material_id || m.id) === materialId) || null;
+                    };
+                }
+            };
+        }
+    }
+}
+
+function closeModal() {
+    document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    document.body.style.overflow = '';
+
+    // Reset form state
+    resetActionForm();
+    resetSimpleTimePicker();
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+function backToCategories() {
+    closeModal();
+    setTimeout(() => showCategorySelection(), 100);
+}
+
+async function addActionFromModal() {
+    const action = buildCurrentActionFromModal();
+
+    if (!action) {
+        showToast('Заполните все поля', 'error');
+        return;
+    }
+
+    // Add to draft
+    const actions = [...(state.currentDraft.actions || []), action];
+    await updateDraft({ actions });
+
+    // Render
+    renderActions();
+    closeModal();
+    updateMainButton();
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    }
+
+    showToast('Действие добавлено', 'success');
+}
+
+function buildCurrentActionFromModal() {
+    const category = state.currentCategory;
+
+    switch (category) {
+        case 'labour': {
+            const select = document.getElementById('modal-labour-type');
+            const typeId = select?.value;
+            if (!typeId) return null;
+
+            const hours = state.selectedHours || 0;
+            const minutes = state.selectedMinutes || 0;
+            if (hours === 0 && minutes === 0) return null;
+
+            const typeName = select.options[select.selectedIndex].text;
+            const totalHours = hours + minutes / 60;
+
+            return {
+                category: 'Работы',
+                subcategory: typeId,
+                subcategory_name: typeName,
+                type_name: 'Трудозатраты',
+                quantity: String(totalHours),
+                unit: 'ч.',
+                displayTime: formatTime(hours, minutes)
+            };
+        }
+
+        case 'paint': {
+            const materialSelect = document.getElementById('modal-paint-material');
+            const quantity = parseFloat(document.getElementById('modal-paint-quantity')?.value);
+            const typeSelect = document.getElementById('modal-paint-type');
+
+            if (!materialSelect?.value || isNaN(quantity) || quantity <= 0) {
+                return null;
+            }
+
+            const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+            const materialName = materialSelect.options[materialSelect.selectedIndex].text;
+            const unit = state.selectedPaintMaterial?.unit || 'л';
+
+            return {
+                category: 'ЛКМ',
+                subcategory: materialSelect.value,
+                subcategory_name: materialName,
+                type_name: typeName,
+                quantity: quantity.toString(),
+                unit: unit
+            };
+        }
+
+        case 'materials': {
+            const materialSelect = document.getElementById('modal-material');
+            const quantity = parseFloat(document.getElementById('modal-material-quantity')?.value);
+            const typeSelect = document.getElementById('modal-material-type');
+
+            if (!materialSelect?.value || isNaN(quantity) || quantity <= 0) {
+                return null;
+            }
+
+            const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+            const materialName = materialSelect.options[materialSelect.selectedIndex].text;
+            const unit = state.selectedMaterial?.unit || '';
+
+            return {
+                category: 'Плита',
+                subcategory: materialSelect.value,
+                subcategory_name: materialName,
+                type_name: typeName,
+                quantity: quantity.toString(),
+                unit: unit
+            };
+        }
+
+        case 'defect': {
+            return {
+                category: 'Брак',
+                subcategory: 'defect',
+                subcategory_name: 'Брак',
+                type_name: 'Брак',
+                quantity: '',
+                unit: ''
+            };
+        }
+
+        default:
+            return null;
+    }
+}
+
+// === Simplified Time Picker ===
+let selectedMinutes = 0;
+
+function selectTimePreset(minutes) {
+    selectedMinutes = minutes;
+
+    // Update state (convert to hours and minutes)
+    state.selectedHours = Math.floor(minutes / 60);
+    state.selectedMinutes = minutes % 60;
+
+    // Update UI
+    document.querySelectorAll('.preset-btn').forEach(b =>
+        b.classList.remove('selected')
+    );
+    const btn = document.querySelector(`[data-minutes="${minutes}"]`);
+    if (btn) btn.classList.add('selected');
+
+    updateSimpleTimeDisplay();
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+    }
+}
+
+function adjustTime(delta) {
+    selectedMinutes = Math.max(0, selectedMinutes + delta);
+
+    // Update state
+    state.selectedHours = Math.floor(selectedMinutes / 60);
+    state.selectedMinutes = selectedMinutes % 60;
+
+    // Deselect presets
+    document.querySelectorAll('.preset-btn').forEach(b =>
+        b.classList.remove('selected')
+    );
+
+    updateSimpleTimeDisplay();
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+    }
+}
+
+function updateSimpleTimeDisplay() {
+    const displayEl = document.getElementById('time-display-value');
+    if (!displayEl) return;
+
+    const hours = Math.floor(selectedMinutes / 60);
+    const mins = selectedMinutes % 60;
+
+    let display = '—';
+    if (selectedMinutes > 0) {
+        if (hours > 0 && mins > 0) {
+            display = `${hours}ч ${mins}м`;
+        } else if (hours > 0) {
+            display = `${hours}ч`;
+        } else {
+            display = `${mins}м`;
+        }
+    }
+
+    displayEl.textContent = display;
+}
+
+function resetSimpleTimePicker() {
+    selectedMinutes = 0;
+    state.selectedHours = null;
+    state.selectedMinutes = null;
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+    updateSimpleTimeDisplay();
+}
+
+// === Project/Product Selection Modal ===
+function showProjectSelectionModal() {
+    const modal = document.getElementById('action-modal');
+    const title = document.getElementById('modal-title');
+    const container = document.getElementById('dynamic-form-container');
+
+    title.textContent = 'Выберите проект и изделие';
+
+    container.innerHTML = `
+        <div class="field">
+            <label>Проект</label>
+            <div class="select-wrapper">
+                <select id="modal-project-select">
+                    <option value="">Выберите проект</option>
+                </select>
+                <span class="select-icon" data-icon="chevronDown"></span>
+            </div>
+        </div>
+        <div class="field">
+            <label>Изделие</label>
+            <div class="select-wrapper">
+                <select id="modal-product-select" disabled>
+                    <option value="">Сначала выберите проект</option>
+                </select>
+                <span class="select-icon" data-icon="chevronDown"></span>
+            </div>
+        </div>
+    `;
+
+    // Inject icons
+    injectIcons();
+
+    // Populate projects
+    const projectSelect = document.getElementById('modal-project-select');
+    const productSelect = document.getElementById('modal-product-select');
+
+    if (projectSelect && state.references?.projects) {
+        populateSelect(projectSelect, state.references.projects, 'project_id', 'project_name', 'Выберите проект');
+
+        // Set current value if exists
+        if (state.currentDraft?.projectId) {
+            projectSelect.value = state.currentDraft.projectId;
+        }
+
+        projectSelect.onchange = async () => {
+            const projectId = projectSelect.value;
+
+            if (!projectId) {
+                productSelect.innerHTML = '<option value="">Сначала выберите проект</option>';
+                productSelect.disabled = true;
+                return;
+            }
+
+            // Get project name
+            const project = state.references.projects.find(p =>
+                String(p.project_id || p.id) === String(projectId)
+            );
+
+            // Load products
+            const products = state.references.products?.[projectId] || [];
+            populateSelect(productSelect, products, 'product_id', 'product_name', 'Выберите изделие');
+
+            // Set current value if exists and matches project
+            if (state.currentDraft?.productId && state.currentDraft?.projectId === projectId) {
+                productSelect.value = state.currentDraft.productId;
+            }
+        };
+
+        // Trigger change if project is already selected
+        if (state.currentDraft?.projectId) {
+            projectSelect.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Update modal footer button
+    const modalBtn = document.getElementById('modal-add-btn');
+    if (modalBtn) {
+        modalBtn.textContent = 'Сохранить';
+        modalBtn.onclick = async () => {
+            const projectId = projectSelect?.value;
+            const productId = productSelect?.value;
+
+            if (!projectId || !productId) {
+                showToast('Выберите проект и изделие', 'error');
+                return;
+            }
+
+            // Get names
+            const project = state.references.projects.find(p =>
+                String(p.project_id || p.id) === String(projectId)
+            );
+            const products = state.references.products?.[projectId] || [];
+            const product = products.find(p =>
+                String(p.product_id || p.id) === String(productId)
+            );
+
+            // Update draft
+            await updateDraft({
+                projectId,
+                projectName: project?.project_name || project?.name || projectId,
+                productId,
+                productName: product?.product_name || product?.name || productId
+            });
+
+            // Update hidden selects for compatibility
+            elements.projectSelect.value = projectId;
+            elements.productSelect.value = productId;
+
+            closeModal();
+            updateProjectDisplay();
+            updateMainButton();
+
+            showToast('Проект и изделие сохранены', 'success');
+        };
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function changeProject() {
+    showProjectSelectionModal();
+}
+
+function updateProjectDisplay() {
+    const draft = state.currentDraft;
+    const badge = document.getElementById('project-badge');
+    const button = document.getElementById('select-project-btn');
+
+    if (draft?.projectId && draft?.productId) {
+        // Show badge
+        document.getElementById('project-name-badge').textContent = draft.projectName || draft.projectId;
+        document.getElementById('product-name-badge').textContent = draft.productName || draft.productId;
+        badge.classList.remove('hidden');
+        button.classList.add('hidden');
+    } else {
+        // Show button
+        badge.classList.add('hidden');
+        button.classList.remove('hidden');
+    }
+}
+
+// === Make functions global for onclick ===
 window.deleteAction = deleteAction;
+window.closeModal = closeModal;
+window.backToCategories = backToCategories;
+window.selectCategory = selectCategory;
+window.addActionFromModal = addActionFromModal;
+window.adjustTime = adjustTime;
+window.showProjectSelectionModal = showProjectSelectionModal;
+window.changeProject = changeProject;

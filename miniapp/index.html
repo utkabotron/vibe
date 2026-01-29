@@ -11,33 +11,34 @@
     <div id="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-row">
+            <div class="header-top">
                 <h1>Новый отчёт</h1>
                 <span id="sent-counter" class="sent-counter hidden"></span>
             </div>
-        </header>
 
-        <!-- Project & Product Selection -->
-        <section class="section">
-            <div class="field">
-                <label>Проект</label>
-                <div class="select-wrapper">
-                    <select id="project-select" disabled>
-                        <option value="">Загрузка...</option>
-                    </select>
-                    <span class="select-icon" data-icon="chevronDown"></span>
-                </div>
+            <!-- Compact badge shown after selection -->
+            <div id="project-badge" class="project-badge hidden" onclick="changeProject()">
+                <span id="project-name-badge">—</span>
+                <span class="separator">•</span>
+                <span id="product-name-badge">—</span>
+                <button class="edit-btn" aria-label="Изменить">✏️</button>
             </div>
-            <div class="field">
-                <label>Изделие</label>
-                <div class="select-wrapper">
-                    <select id="product-select" disabled>
-                        <option value="">Сначала выберите проект</option>
-                    </select>
-                    <span class="select-icon" data-icon="chevronDown"></span>
-                </div>
+
+            <!-- Button shown on first launch -->
+            <button id="select-project-btn" class="select-project-btn hidden" onclick="showProjectSelectionModal()">
+                Выбрать проект и изделие
+            </button>
+
+            <!-- Hidden selects for compatibility -->
+            <div style="display: none;">
+                <select id="project-select" disabled>
+                    <option value="">Загрузка...</option>
+                </select>
+                <select id="product-select" disabled>
+                    <option value="">Сначала выберите проект</option>
+                </select>
             </div>
-        </section>
+        </header>
 
         <!-- Actions List -->
         <section class="section">
@@ -56,8 +57,8 @@
                     <span class="plus">+</span> Добавить действие
                 </button>
 
-                <!-- Inline Form (hidden by default) -->
-                <div id="action-form" class="action-form hidden">
+                <!-- Inline Form (deprecated - now using modal) -->
+                <div id="action-form" class="action-form hidden" style="display: none;">
                     <!-- Category Tabs -->
                     <div class="category-tabs">
                         <button class="tab active" data-category="labour">
@@ -233,6 +234,59 @@
 
     <!-- Error Toast -->
     <div id="toast" class="toast hidden"></div>
+
+    <!-- Category Selection Modal -->
+    <div id="category-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content slide-up">
+            <div class="modal-header">
+                <h2>Выберите категорию</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+
+            <div class="category-grid">
+                <button class="category-card" data-category="labour" onclick="selectCategory('labour')">
+                    <span class="category-icon">🔧</span>
+                    <span class="category-label">Работы</span>
+                </button>
+                <button class="category-card" data-category="paint" onclick="selectCategory('paint')">
+                    <span class="category-icon">🎨</span>
+                    <span class="category-label">ЛКМ</span>
+                </button>
+                <button class="category-card" data-category="materials" onclick="selectCategory('materials')">
+                    <span class="category-icon">📦</span>
+                    <span class="category-label">Плита</span>
+                </button>
+                <button class="category-card" data-category="defect" onclick="selectCategory('defect')">
+                    <span class="category-icon">⚠️</span>
+                    <span class="category-label">Брак</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Form Modal (per category) -->
+    <div id="action-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content slide-up">
+            <div class="modal-header">
+                <button class="back-btn" onclick="backToCategories()">←</button>
+                <h2 id="modal-title">Работы</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Dynamically loaded form content -->
+                <div id="dynamic-form-container"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-primary" id="modal-add-btn" onclick="addActionFromModal()">
+                    Добавить
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="icons.js"></script>
     <script src="db.js"></script>
