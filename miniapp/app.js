@@ -85,7 +85,6 @@ function cacheElements() {
     elements.productSelect = document.getElementById('product-select');
     elements.actionsList = document.getElementById('actions-list');
     elements.actionsCount = document.getElementById('actions-count');
-    elements.addActionBtn = document.getElementById('add-action-btn');
     elements.actionForm = document.getElementById('action-form');
     elements.labourTypeSelect = document.getElementById('labour-type-select');
     elements.paintTypeSelect = document.getElementById('paint-type-select');
@@ -294,11 +293,8 @@ function setupEventListeners() {
     // Material type change
     elements.materialTypeSelect.addEventListener('change', onMaterialTypeChange);
 
-    // Add action button - shows inline form
-    elements.addActionBtn.addEventListener('click', showActionForm);
-
-    // Cancel action
-    elements.cancelActionBtn.addEventListener('click', hideActionForm);
+    // Cancel action - just resets the form
+    elements.cancelActionBtn.addEventListener('click', resetActionForm);
 
     // Confirm action
     elements.confirmActionBtn.addEventListener('click', addAction);
@@ -494,7 +490,10 @@ async function addAction() {
 
     // Render
     renderActions();
-    hideActionForm();
+
+    // Reset form (but keep it visible)
+    resetActionForm();
+
     updateMainButton();
 
     // Haptic feedback
@@ -503,19 +502,6 @@ async function addAction() {
     }
 
     showToast('Действие добавлено', 'success');
-}
-
-// Restore inline form visibility
-function showActionForm() {
-    elements.addActionBtn.classList.add('hidden');
-    elements.actionForm.classList.remove('hidden');
-    resetActionForm();
-}
-
-function hideActionForm() {
-    elements.actionForm.classList.add('hidden');
-    elements.addActionBtn.classList.remove('hidden');
-    resetActionForm();
 }
 
 function buildCurrentAction() {

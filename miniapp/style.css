@@ -447,32 +447,6 @@ textarea::placeholder {
     font-weight: var(--weight-regular);
 }
 
-/* === Add Action Button === */
-.add-action-btn {
-    width: 100%;
-    padding: var(--space-base);
-    border: 1px solid var(--separator-opaque);
-    border-radius: var(--radius-md);
-    background: white;
-    color: var(--accent-primary);
-    font-size: var(--text-base);
-    font-weight: var(--weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-}
-
-.add-action-btn .plus {
-    font-size: 1.1rem;
-}
-
-.add-action-btn:active {
-    background: var(--state-hover);
-}
-
 /* === Action Form === */
 .action-form {
     background: var(--bg-secondary);
