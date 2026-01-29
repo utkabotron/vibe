@@ -16,29 +16,38 @@
                 <span id="sent-counter" class="sent-counter hidden"></span>
             </div>
 
-            <!-- Compact badge shown after selection -->
-            <div id="project-badge" class="project-badge hidden" onclick="changeProject()">
+            <!-- Compact badge shown after both selections -->
+            <div id="project-badge" class="project-badge hidden" onclick="editProjectProduct()">
                 <span id="project-name-badge">—</span>
                 <span class="separator">•</span>
                 <span id="product-name-badge">—</span>
                 <button class="edit-btn" aria-label="Изменить">✏️</button>
             </div>
-
-            <!-- Button shown on first launch -->
-            <button id="select-project-btn" class="select-project-btn hidden" onclick="showProjectSelectionModal()">
-                Выбрать проект и изделие
-            </button>
-
-            <!-- Hidden selects for compatibility -->
-            <div style="display: none;">
-                <select id="project-select" disabled>
-                    <option value="">Загрузка...</option>
-                </select>
-                <select id="product-select" disabled>
-                    <option value="">Сначала выберите проект</option>
-                </select>
-            </div>
         </header>
+
+        <!-- Project & Product Selection -->
+        <section id="project-selection-section" class="section">
+            <div class="section-title">Выберите проект</div>
+
+            <!-- Project Cards Grid -->
+            <div id="project-cards-grid" class="project-cards-grid">
+                <!-- Projects will be rendered here -->
+            </div>
+
+            <!-- Product Dropdown (appears after project selection) -->
+            <div id="product-field" class="field hidden" style="margin-top: 16px;">
+                <label>Изделие</label>
+                <div class="select-wrapper">
+                    <select id="product-select">
+                        <option value="">Выберите изделие</option>
+                    </select>
+                    <span class="select-icon" data-icon="chevronDown"></span>
+                </div>
+            </div>
+
+            <!-- Hidden select for compatibility -->
+            <select id="project-select" style="display: none;"></select>
+        </section>
 
         <!-- Actions List -->
         <section class="section">

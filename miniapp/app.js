@@ -251,9 +251,8 @@ async function loadCurrentDraft() {
 function populateSelects() {
     if (!state.references) return;
 
-    // Projects
-    const projects = state.references.projects || [];
-    populateSelect(elements.projectSelect, projects, 'project_id', 'project_name', 'Выберите проект');
+    // Render project cards
+    renderProjectCards();
 
     // Labour types
     const labourTypes = state.references.labourTypes || [];
@@ -287,9 +286,6 @@ function populateSelect(select, items, valueKey, textKey, placeholder) {
 
 // === Event Listeners ===
 function setupEventListeners() {
-    // Project change
-    elements.projectSelect.addEventListener('change', onProjectChange);
-
     // Paint type change
     elements.paintTypeSelect.addEventListener('change', onPaintTypeChange);
 
@@ -337,54 +333,6 @@ function setupEventListeners() {
     if (elements.submitBtn) {
         elements.submitBtn.addEventListener('click', submitReport);
     }
-}
-
-// === Project/Product Handling ===
-async function onProjectChange() {
-    const projectId = elements.projectSelect.value;
-
-    // Reset product
-    elements.productSelect.innerHTML = '<option value="">Загрузка...</option>';
-    elements.productSelect.disabled = true;
-
-    if (!projectId) {
-        elements.productSelect.innerHTML = '<option value="">Сначала выберите проект</option>';
-        return;
-    }
-
-    // Get project name (compare as strings)
-    const project = state.references.projects.find(p =>
-        String(p.project_id || p.id) === String(projectId)
-    );
-
-    // Update draft
-    await updateDraft({
-        projectId,
-        projectName: project?.project_name || project?.name || projectId,
-        productId: null,
-        productName: null
-    });
-
-    // Load products
-    const products = state.references.products?.[projectId] || [];
-    populateSelect(elements.productSelect, products, 'product_id', 'product_name', 'Выберите изделие');
-
-    // Product change handler
-    elements.productSelect.onchange = async () => {
-        const productId = elements.productSelect.value;
-        const product = products.find(p => String(p.product_id || p.id) === String(productId));
-
-        await updateDraft({
-            productId,
-            productName: product?.product_name || product?.name || productId
-        });
-
-        updateMainButton();
-        updateProjectDisplay();
-    };
-
-    updateMainButton();
-    updateProjectDisplay();
 }
 
 // === Paint/Material Type Handling ===
@@ -725,25 +673,15 @@ async function deleteAction(index) {
 function renderDraft() {
     if (!state.currentDraft) return;
 
-    // Project
-    if (state.currentDraft.projectId) {
-        elements.projectSelect.value = state.currentDraft.projectId;
-        onProjectChange().then(() => {
-            // Product (after products loaded)
-            if (state.currentDraft.productId) {
-                elements.productSelect.value = state.currentDraft.productId;
-            }
-        });
-    }
-
     // Comment
     elements.comment.value = state.currentDraft.comment || '';
 
     // Actions
     renderActions();
 
-    updateMainButton();
+    // Project/Product display
     updateProjectDisplay();
+    updateMainButton();
 }
 
 function renderActions() {
@@ -1447,7 +1385,145 @@ function resetSimpleTimePicker() {
     updateSimpleTimeDisplay();
 }
 
-// === Project/Product Selection Modal ===
+// === Project Cards Rendering ===
+function renderProjectCards() {
+    const container = document.getElementById('project-cards-grid');
+    if (!container) return;
+
+    const projects = state.references?.projects || [];
+
+    if (projects.length === 0) {
+        container.innerHTML = '<p class="hint">Проекты не найдены</p>';
+        return;
+    }
+
+    container.innerHTML = projects.map(project => {
+        const projectId = String(project.project_id || project.id);
+        const projectName = project.project_name || project.name;
+        const isSelected = state.currentDraft?.projectId === projectId;
+
+        return `
+            <button class="project-card ${isSelected ? 'selected' : ''}"
+                    data-project-id="${projectId}"
+                    onclick="selectProject('${projectId}')">
+                ${projectName}
+            </button>
+        `;
+    }).join('');
+}
+
+function selectProject(projectId) {
+    const project = state.references.projects.find(p =>
+        String(p.project_id || p.id) === String(projectId)
+    );
+
+    if (!project) return;
+
+    // Update draft
+    updateDraft({
+        projectId,
+        projectName: project.project_name || project.name,
+        productId: null,
+        productName: null
+    });
+
+    // Update UI
+    renderProjectCards();
+    showProductDropdown(projectId);
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+function showProductDropdown(projectId) {
+    const productField = document.getElementById('product-field');
+    const productSelect = document.getElementById('product-select');
+
+    if (!productField || !productSelect) return;
+
+    // Get products for this project
+    const products = state.references.products?.[projectId] || [];
+
+    // Populate dropdown
+    populateSelect(productSelect, products, 'product_id', 'product_name', 'Выберите изделие');
+
+    // Show field
+    productField.classList.remove('hidden');
+
+    // Add change handler
+    productSelect.onchange = async () => {
+        const productId = productSelect.value;
+        if (!productId) return;
+
+        const product = products.find(p =>
+            String(p.product_id || p.id) === String(productId)
+        );
+
+        // Update draft
+        await updateDraft({
+            productId,
+            productName: product?.product_name || product?.name || productId
+        });
+
+        // Collapse to badge
+        collapseProjectSelection();
+        updateMainButton();
+
+        // Haptic feedback
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    };
+
+    // Scroll to dropdown
+    productField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function collapseProjectSelection() {
+    const section = document.getElementById('project-selection-section');
+    const badge = document.getElementById('project-badge');
+
+    if (section) section.classList.add('hidden');
+    if (badge) badge.classList.remove('hidden');
+
+    updateProjectBadge();
+}
+
+function expandProjectSelection() {
+    const section = document.getElementById('project-selection-section');
+    const badge = document.getElementById('project-badge');
+
+    if (section) section.classList.remove('hidden');
+    if (badge) badge.classList.add('hidden');
+
+    // Re-render to show current selection
+    renderProjectCards();
+
+    if (state.currentDraft?.projectId) {
+        showProductDropdown(state.currentDraft.projectId);
+        // Set current product value
+        const productSelect = document.getElementById('product-select');
+        if (productSelect && state.currentDraft?.productId) {
+            productSelect.value = state.currentDraft.productId;
+        }
+    }
+}
+
+function updateProjectBadge() {
+    const draft = state.currentDraft;
+    if (!draft?.projectId || !draft?.productId) return;
+
+    document.getElementById('project-name-badge').textContent = draft.projectName || draft.projectId;
+    document.getElementById('product-name-badge').textContent = draft.productName || draft.productId;
+}
+
+function editProjectProduct() {
+    expandProjectSelection();
+}
+
+// === Project/Product Selection Modal (deprecated - keeping for compatibility) ===
 function showProjectSelectionModal() {
     const modal = document.getElementById('action-modal');
     const title = document.getElementById('modal-title');
@@ -1573,19 +1649,28 @@ function changeProject() {
 
 function updateProjectDisplay() {
     const draft = state.currentDraft;
+    const section = document.getElementById('project-selection-section');
     const badge = document.getElementById('project-badge');
-    const button = document.getElementById('select-project-btn');
 
     if (draft?.projectId && draft?.productId) {
-        // Show badge
-        document.getElementById('project-name-badge').textContent = draft.projectName || draft.projectId;
-        document.getElementById('product-name-badge').textContent = draft.productName || draft.productId;
-        badge.classList.remove('hidden');
-        button.classList.add('hidden');
+        // Both selected - show badge, hide section
+        collapseProjectSelection();
     } else {
-        // Show button
-        badge.classList.add('hidden');
-        button.classList.remove('hidden');
+        // Not fully selected - show section
+        if (section) section.classList.remove('hidden');
+        if (badge) badge.classList.add('hidden');
+
+        // Re-render cards to show selection
+        renderProjectCards();
+
+        // If project selected, show product dropdown
+        if (draft?.projectId) {
+            showProductDropdown(draft.projectId);
+            const productSelect = document.getElementById('product-select');
+            if (productSelect && draft?.productId) {
+                productSelect.value = draft.productId;
+            }
+        }
     }
 }
 
@@ -1598,3 +1683,5 @@ window.addActionFromModal = addActionFromModal;
 window.adjustTime = adjustTime;
 window.showProjectSelectionModal = showProjectSelectionModal;
 window.changeProject = changeProject;
+window.selectProject = selectProject;
+window.editProjectProduct = editProjectProduct;
