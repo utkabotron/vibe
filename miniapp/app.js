@@ -516,11 +516,18 @@ function buildCurrentAction() {
             const hours = state.selectedHours;
             const minutes = state.selectedMinutes;
 
-            // Both hours and minutes must be selected
-            if (hours === null || minutes === null) return null;
+            // At least one time value must be selected
+            if (hours === null && minutes === null) return null;
+
+            // Default to 0 if not selected
+            const finalHours = hours !== null ? hours : 0;
+            const finalMinutes = minutes !== null ? minutes : 0;
+
+            // Can't be 0 hours 0 minutes
+            if (finalHours === 0 && finalMinutes === 0) return null;
 
             const typeName = select.options[select.selectedIndex].text;
-            const totalHours = hours + minutes / 60;
+            const totalHours = finalHours + finalMinutes / 60;
             const comment = document.getElementById('labour-comment')?.value || '';
 
             return {
@@ -530,7 +537,7 @@ function buildCurrentAction() {
                 type_name: 'Трудозатраты',
                 quantity: String(totalHours),
                 unit: 'ч.',
-                displayTime: formatTime(hours, minutes),
+                displayTime: formatTime(finalHours, finalMinutes),
                 comment: comment
             };
         }
