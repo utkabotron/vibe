@@ -1419,22 +1419,28 @@ function selectProject(projectId) {
 
     if (!project) return;
 
-    // Update draft
+    // Haptic feedback first (instant)
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+    }
+
+    // Update state immediately for instant UI update
+    state.currentDraft.projectId = projectId;
+    state.currentDraft.projectName = project.project_name || project.name;
+    state.currentDraft.productId = null;
+    state.currentDraft.productName = null;
+
+    // Update UI immediately (instant visual feedback)
+    renderProjectCards();
+    showProductDropdown(projectId);
+
+    // Save to IndexedDB in background (async, non-blocking)
     updateDraft({
         projectId,
         projectName: project.project_name || project.name,
         productId: null,
         productName: null
     });
-
-    // Update UI
-    renderProjectCards();
-    showProductDropdown(projectId);
-
-    // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
 }
 
 function showProductDropdown(projectId) {

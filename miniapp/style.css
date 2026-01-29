@@ -1142,7 +1142,7 @@ textarea::placeholder {
     padding: 16px;
     background: white;
     cursor: pointer;
-    transition: all 200ms;
+    transition: all 150ms ease-out;
     font-size: 15px;
     font-weight: 500;
     color: var(--text-primary);
@@ -1151,21 +1151,24 @@ textarea::placeholder {
     justify-content: space-between;
     border: none;
     text-align: left;
+    position: relative;
 }
 
 .project-card:active {
-    background: var(--state-hover);
+    background: var(--state-pressed);
+    transform: scale(0.98);
 }
 
 .project-card.selected {
     background: var(--accent-primary);
     color: white;
+    font-weight: 600;
 }
 
 .project-card.selected::after {
     content: '✓';
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 /* === Utilities === */
