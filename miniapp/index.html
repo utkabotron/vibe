@@ -25,6 +25,7 @@
                     <select id="project-select" disabled>
                         <option value="">Загрузка...</option>
                     </select>
+                    <span class="select-icon" data-icon="chevronDown"></span>
                 </div>
             </div>
             <div class="field">
@@ -33,6 +34,7 @@
                     <select id="product-select" disabled>
                         <option value="">Сначала выберите проект</option>
                     </select>
+                    <span class="select-icon" data-icon="chevronDown"></span>
                 </div>
             </div>
         </section>
@@ -58,10 +60,22 @@
                 <div id="action-form" class="action-form hidden">
                     <!-- Category Tabs -->
                     <div class="category-tabs">
-                        <button class="tab active" data-category="labour">Работы</button>
-                        <button class="tab" data-category="paint">ЛКМ</button>
-                        <button class="tab" data-category="materials">Плита</button>
-                        <button class="tab" data-category="defect">Брак</button>
+                        <button class="tab active" data-category="labour">
+                            <span class="tab-icon" data-icon="labour"></span>
+                            <span class="tab-label">Работы</span>
+                        </button>
+                        <button class="tab" data-category="paint">
+                            <span class="tab-icon" data-icon="paint"></span>
+                            <span class="tab-label">ЛКМ</span>
+                        </button>
+                        <button class="tab" data-category="materials">
+                            <span class="tab-icon" data-icon="materials"></span>
+                            <span class="tab-label">Плита</span>
+                        </button>
+                        <button class="tab" data-category="defect">
+                            <span class="tab-icon" data-icon="defect"></span>
+                            <span class="tab-label">Брак</span>
+                        </button>
                     </div>
 
                     <!-- Labour Form -->
@@ -72,27 +86,49 @@
                                 <select id="labour-type-select">
                                     <option value="">Выберите</option>
                                 </select>
+                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
 
                         <div class="time-picker">
-                            <label>Часы</label>
-                            <div class="time-buttons hours">
-                                <button data-value="1">1</button>
-                                <button data-value="2">2</button>
-                                <button data-value="3">3</button>
-                                <button data-value="4">4</button>
-                                <button data-value="5">5</button>
-                                <button data-value="6">6</button>
-                                <button data-value="7">7</button>
-                                <button data-value="8">8</button>
+                            <div class="time-picker-header">
+                                <div class="time-icon-wrapper">
+                                    <span data-icon="clock"></span>
+                                </div>
+                                <div>
+                                    <label class="time-label">Время работы</label>
+                                    <p class="time-hint">Выберите часы и минуты</p>
+                                </div>
                             </div>
 
-                            <label>Минуты</label>
-                            <div class="time-buttons minutes">
-                                <button data-value="15">15</button>
-                                <button data-value="30">30</button>
-                                <button data-value="45">45</button>
+                            <div class="time-display-large">
+                                <span id="time-value-hours" class="time-segment">—</span>
+                                <span class="time-separator">:</span>
+                                <span id="time-value-minutes" class="time-segment">—</span>
+                                <span class="time-unit">ч:м</span>
+                            </div>
+
+                            <div class="time-section">
+                                <div class="time-section-label">Часы</div>
+                                <div class="time-buttons hours">
+                                    <button data-value="1">1</button>
+                                    <button data-value="2">2</button>
+                                    <button data-value="3">3</button>
+                                    <button data-value="4">4</button>
+                                    <button data-value="5">5</button>
+                                    <button data-value="6">6</button>
+                                    <button data-value="7">7</button>
+                                    <button data-value="8">8</button>
+                                </div>
+                            </div>
+
+                            <div class="time-section">
+                                <div class="time-section-label">Минуты</div>
+                                <div class="time-buttons minutes">
+                                    <button data-value="15">15</button>
+                                    <button data-value="30">30</button>
+                                    <button data-value="45">45</button>
+                                </div>
                             </div>
 
                             <div class="time-display">
@@ -109,6 +145,7 @@
                                 <select id="paint-type-select">
                                     <option value="">Выберите</option>
                                 </select>
+                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -117,6 +154,7 @@
                                 <select id="paint-material-select" disabled>
                                     <option value="">Сначала выберите тип</option>
                                 </select>
+                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -133,6 +171,7 @@
                                 <select id="material-type-select">
                                     <option value="">Выберите</option>
                                 </select>
+                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -141,6 +180,7 @@
                                 <select id="material-select" disabled>
                                     <option value="">Сначала выберите тип</option>
                                 </select>
+                                <span class="select-icon" data-icon="chevronDown"></span>
                             </div>
                         </div>
                         <div class="field">
@@ -194,6 +234,7 @@
     <!-- Error Toast -->
     <div id="toast" class="toast hidden"></div>
 
+    <script src="icons.js"></script>
     <script src="db.js"></script>
     <script src="app.js"></script>
 </body>

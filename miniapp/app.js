@@ -103,6 +103,16 @@ function cacheElements() {
     elements.categoryTabs = document.querySelectorAll('.category-tabs .tab');
     elements.submitBtn = document.getElementById('submit-btn');
     elements.submitSection = document.getElementById('submit-section');
+
+    // Inject SVG icons
+    injectIcons();
+}
+
+function injectIcons() {
+    document.querySelectorAll('[data-icon]').forEach(el => {
+        const iconName = el.dataset.icon;
+        el.innerHTML = getIcon(iconName);
+    });
 }
 
 function initTelegram() {
@@ -455,6 +465,7 @@ function selectTime(type, btn) {
     }
 
     updateTimeDisplay();
+    updateTimeLargeDisplay();
 
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -476,7 +487,35 @@ function updateTimeDisplay() {
         display = `${minutes}м`;
     }
 
-    elements.timeValue.textContent = display;
+    if (elements.timeValue) {
+        elements.timeValue.textContent = display;
+    }
+}
+
+function updateTimeLargeDisplay() {
+    const hoursEl = document.getElementById('time-value-hours');
+    const minutesEl = document.getElementById('time-value-minutes');
+
+    if (!hoursEl || !minutesEl) return;
+
+    const hours = state.selectedHours;
+    const minutes = state.selectedMinutes;
+
+    if (hours !== null) {
+        hoursEl.textContent = String(hours).padStart(2, '0');
+        hoursEl.classList.add('has-value');
+    } else {
+        hoursEl.textContent = '—';
+        hoursEl.classList.remove('has-value');
+    }
+
+    if (minutes !== null) {
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        minutesEl.classList.add('has-value');
+    } else {
+        minutesEl.textContent = '—';
+        minutesEl.classList.remove('has-value');
+    }
 }
 
 function resetTimeSelection() {
@@ -485,6 +524,7 @@ function resetTimeSelection() {
     elements.hoursButtons.forEach(b => b.classList.remove('selected'));
     elements.minutesButtons.forEach(b => b.classList.remove('selected'));
     updateTimeDisplay();
+    updateTimeLargeDisplay();
 }
 
 // === Category Switching ===
@@ -709,34 +749,49 @@ function renderActions() {
     elements.actionsCount.textContent = actions.length > 0 ? `(${actions.length})` : '';
 
     if (actions.length === 0) {
-        elements.actionsList.innerHTML = '<div class="empty-state">Нет добавленных действий</div>';
+        elements.actionsList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">${getIcon('plus')}</div>
+                <p class="empty-text">Нет добавленных действий</p>
+            </div>
+        `;
         return;
     }
 
     elements.actionsList.innerHTML = actions.map((action, index) => {
-        const icon = getCategoryIcon(action.category);
+        const categoryKey = getCategoryKey(action.category);
+        const icon = getIcon(categoryKey);
         const subtitle = action.displayTime || `${action.quantity} ${action.unit}`;
 
         return `
-            <div class="action-card">
-                <div class="action-card-content">
-                    <div class="action-card-title">${icon} ${action.subcategory_name}</div>
-                    <div class="action-card-subtitle">${action.category} • ${subtitle}</div>
+            <div class="action-card" style="animation: slideInUp ${200 + index * 50}ms var(--transition-spring) both;">
+                <div class="action-icon" data-category="${categoryKey}">
+                    ${icon}
                 </div>
-                <button class="action-card-delete" onclick="deleteAction(${index})">×</button>
+                <div class="action-content">
+                    <p class="action-title">${action.subcategory_name}</p>
+                    <div class="action-meta">
+                        <span class="action-category">${action.category}</span>
+                        <span class="action-separator">•</span>
+                        <span class="action-value">${subtitle}</span>
+                    </div>
+                </div>
+                <button class="action-delete" onclick="deleteAction(${index})" aria-label="Удалить">
+                    ${getIcon('close')}
+                </button>
             </div>
         `;
     }).join('');
 }
 
-function getCategoryIcon(category) {
-    const icons = {
-        'Работы': '🔧',
-        'ЛКМ': '🎨',
-        'Плита': '📦',
-        'Брак': '⚠️'
+function getCategoryKey(category) {
+    const map = {
+        'Работы': 'labour',
+        'ЛКМ': 'paint',
+        'Плита': 'materials',
+        'Брак': 'defect'
     };
-    return icons[category] || '📋';
+    return map[category] || 'labour';
 }
 
 // === Draft Management ===
