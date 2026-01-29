@@ -337,11 +337,16 @@ systemctl restart miniapp
 journalctl -u miniapp -f
 ```
 
+### Production URL
+
+- **Mini App**: https://vibe-bot.brdg.tools/miniapp/
+- **API**: https://vibe-bot.brdg.tools/api/miniapp/
+
 ### Регистрация Mini App в BotFather
 
 1. Открыть @BotFather
 2. Выбрать бота → Bot Settings → Menu Button
-3. Указать URL: `https://miniapp.yourdomain.com/miniapp`
+3. Указать URL: `https://vibe-bot.brdg.tools/miniapp/`
 
 ### IndexedDB структура
 
@@ -428,7 +433,11 @@ cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot
 
 ### Полный деплой одной командой (с локальной машины)
 ```bash
+# Только бот
 ssh root@176.57.214.150 "cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot && sleep 5 && systemctl status hosting-bot --no-pager | head -10"
+
+# Бот + Mini App
+ssh root@176.57.214.150 "cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot miniapp && sleep 5 && systemctl status hosting-bot miniapp --no-pager"
 ```
 
 ## Git workflow
