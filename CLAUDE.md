@@ -272,6 +272,74 @@ vibe/
 
 Telegram Mini App для создания отчётов с offline-поддержкой.
 
+### Дизайн-система (iOS Telegram-like)
+
+**Обновлено:** 2026-01-30
+Mini App использует iOS/Telegram дизайн-систему для нативного ощущения в Telegram.
+
+**Ключевые принципы:**
+- **iOS Grouped List** - формы и табы объединены в единый белый контейнер с тенью
+- **Segmented Control** - табы категорий выполнены в стиле iOS (padding 2px, border-radius 9px)
+- **iOS Typography** - базовый размер 17px с line-height 1.29
+- **Telegram Colors** - цветовая схема соответствует дизайн-гайдам Telegram
+
+**Типографика (miniapp/style.css:66-87):**
+```css
+--text-xs: 12px;
+--text-sm: 13px;
+--text-base: 17px;    /* iOS standard */
+--text-lg: 19px;
+--text-xl: 22px;
+--text-2xl: 26px;
+--leading-normal: 1.29; /* iOS standard 17px = 22px line-height */
+```
+
+**Цветовая палитра (miniapp/style.css:28-51):**
+```css
+--text-secondary: #8E8E93;           /* iOS gray */
+--text-tertiary: #C7C7CC;            /* iOS light gray */
+--bg-tertiary: rgba(118,118,128,0.12); /* iOS input background */
+--separator-opaque: rgba(60,60,67,0.29);
+--separator-subtle: rgba(60,60,67,0.12);
+--state-hover: rgba(0,0,0,0.05);     /* Subtle hover */
+```
+
+**Border Radius (miniapp/style.css:63-69):**
+```css
+--radius-sm: 7px;   /* iOS small radius */
+--radius-md: 12px;  /* iOS medium radius */
+--radius-lg: 14px;  /* iOS large radius */
+```
+
+**Grouped List структура (miniapp/index.html:18-184):**
+```html
+<div class="form-group">           <!-- iOS grouped list container -->
+  <div class="category-tabs">      <!-- Segmented control -->
+    <button class="tab active">
+      <span class="tab-icon" data-icon="labour"></span>
+      <span class="tab-label">Работы</span>
+    </button>
+    ...
+  </div>
+  <div class="form-separator"></div> <!-- 1px separator line -->
+  <div id="action-form-container">
+    <div class="action-form">...</div>
+  </div>
+</div>
+```
+
+**Icons:**
+- Иконки инъектируются через `injectIcons()` в `miniapp/app.js:112`
+- SVG иконки определены в `miniapp/icons.js`
+- Размер: 20x20px для табов
+
+**Важные правила:**
+1. **Не использовать text-transform: uppercase** - iOS использует normal case
+2. **Консистентные отступы** - использовать CSS переменные `--space-*`
+3. **Line-height = 1.29** - для всех текстов (iOS стандарт)
+4. **Input/textarea** - явно указывать font-size и line-height для консистентности с placeholder
+5. **Segmented control** - border-radius контейнера на 2px больше чем у активной кнопки
+
 ### Архитектура
 
 ```
