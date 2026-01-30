@@ -451,7 +451,37 @@ journalctl -u miniapp -f
 ### Данные сервера
 - **IP**: 176.57.214.150
 - **Путь к боту**: `/root/Hosting_bot`
-- **SSH**: `ssh root@176.57.214.150`
+- **SSH алиас**: `vibe-server` (настроен в `~/.ssh/config` с ключом `id_server_176`)
+- **SSH прямой**: `ssh root@176.57.214.150` (требует ключ)
+
+### SSH настройка
+
+**Конфигурация** (`~/.ssh/config`):
+```
+Host vibe-server
+  HostName 176.57.214.150
+  User root
+  IdentityFile ~/.ssh/id_server_176
+  ServerAliveInterval 15
+  ServerAliveCountMax 3
+  TCPKeepAlive yes
+  Compression yes
+  ControlMaster auto
+  ControlPath ~/.ssh/control-%r@%h:%p
+  ControlPersist 10m
+  StrictHostKeyChecking no
+```
+
+**Проверка подключения:**
+```bash
+ssh vibe-server "whoami && pwd"
+# Должен вернуть: root /root
+```
+
+**Если SSH не работает:**
+- Проверить что ключ существует: `ls -la ~/.ssh/id_server_176`
+- Проверить права: `chmod 600 ~/.ssh/id_server_176`
+- Проверить порт: `nc -zv 176.57.214.150 22`
 
 ### Управление ботом (systemd)
 ```bash
@@ -472,19 +502,90 @@ journalctl -u hosting-bot --since "5 minutes ago" --no-pager
 ```
 
 ### Деплой изменений
+
+**Полный процесс деплоя:**
+
 ```bash
-# На сервере:
-cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot
+# 1. Закоммитить и запушить изменения
+git add -A
+git commit -m "описание изменений
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+git push origin main
+
+# 2. Деплой на сервер (через алиас vibe-server)
+ssh vibe-server "cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot miniapp"
+
+# 3. Проверка статуса
+ssh vibe-server "systemctl status hosting-bot miniapp --no-pager | head -20"
 ```
 
-### Полный деплой одной командой (с локальной машины)
-```bash
-# Только бот
-ssh root@176.57.214.150 "cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot && sleep 5 && systemctl status hosting-bot --no-pager | head -10"
+**Быстрый деплой одной командой:**
 
-# Бот + Mini App
-ssh root@176.57.214.150 "cd /root/Hosting_bot && git pull origin main && systemctl restart hosting-bot miniapp && sleep 5 && systemctl status hosting-bot miniapp --no-pager"
+```bash
+# После git push origin main:
+ssh vibe-server "cd /root/Hosting_bot && git pull && systemctl restart hosting-bot miniapp"
 ```
+
+**Деплой только бота (без Mini App):**
+```bash
+ssh vibe-server "cd /root/Hosting_bot && git pull && systemctl restart hosting-bot"
+```
+
+**Деплой только Mini App:**
+```bash
+ssh vibe-server "cd /root/Hosting_bot && git pull && systemctl restart miniapp"
+```
+
+**На сервере вручную:**
+```bash
+# Подключиться
+ssh vibe-server
+
+# В директории бота
+cd /root/Hosting_bot
+git pull origin main
+systemctl restart hosting-bot miniapp
+
+# Проверить
+systemctl status hosting-bot
+systemctl status miniapp
+```
+
+### Проверка успешности деплоя
+
+**После деплоя проверить:**
+
+```bash
+# 1. Статус сервисов
+ssh vibe-server "systemctl is-active hosting-bot miniapp"
+# Должен вернуть: active active
+
+# 2. Логи (последние 10 строк)
+ssh vibe-server "journalctl -u hosting-bot -n 10 --no-pager"
+ssh vibe-server "journalctl -u miniapp -n 10 --no-pager"
+
+# 3. Порты (8080 для miniapp)
+ssh vibe-server "ss -tlnp | grep 8080"
+# Должен показать: python3 слушает на 0.0.0.0:8080
+
+# 4. HTTP доступность
+curl -s -o /dev/null -w "HTTP: %{http_code}\n" https://vibe-bot.brdg.tools/miniapp/
+# Должен вернуть: HTTP: 200
+
+# 5. API работает
+curl -s https://vibe-bot.brdg.tools/api/miniapp/sync | python3 -m json.tool | head -10
+# Должен вернуть JSON с проектами
+```
+
+**Признаки успешного деплоя:**
+- ✅ Оба сервиса `active (running)`
+- ✅ В логах нет ошибок (ERROR, FAILED)
+- ✅ Порт 8080 слушает на 0.0.0.0
+- ✅ HTTPS возвращает 200
+- ✅ API возвращает данные
 
 ## Git workflow
 
@@ -534,3 +635,41 @@ EOF
 3. Убедиться что nginx проксирует на правильный порт (8080 по умолчанию)
 4. Проверить HTTPS сертификат (Telegram требует HTTPS для Mini Apps)
 5. Проверить CORS headers в ответах API (должен быть Access-Control-Allow-Origin)
+
+### Проблемы при деплое
+
+**SSH зависает:**
+```bash
+# Проверить порт открыт
+nc -zv 176.57.214.150 22
+
+# Если зависает - проблема с sshpass, использовать алиас:
+ssh vibe-server "whoami"
+```
+
+**Git pull не работает:**
+```bash
+# На сервере проверить статус
+ssh vibe-server "cd /root/Hosting_bot && git status"
+
+# Если есть uncommitted changes - сбросить
+ssh vibe-server "cd /root/Hosting_bot && git reset --hard HEAD && git pull"
+```
+
+**Mini App возвращает 502:**
+```bash
+# Проверить слушает ли на правильном интерфейсе
+ssh vibe-server "ss -tlnp | grep 8080"
+# Должен быть 0.0.0.0:8080, а не 127.0.0.1:8080
+
+# Если 127.0.0.1 - исправить в systemd:
+ssh vibe-server "sed -i 's/MINIAPP_HOST=127.0.0.1/MINIAPP_HOST=0.0.0.0/' /etc/systemd/system/miniapp.service && systemctl daemon-reload && systemctl restart miniapp"
+```
+
+**Telegram flood control при перезапуске:**
+```bash
+# Ошибка: "Flood control exceeded. Retry in X seconds"
+# Просто подождать указанное время, сервис автоматически перезапустится
+# Или подождать и перезапустить вручную:
+sleep 60 && ssh vibe-server "systemctl restart miniapp"
+```
