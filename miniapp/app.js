@@ -286,16 +286,24 @@ function populateSelect(select, items, valueKey, textKey, placeholder) {
 // === Event Listeners ===
 function setupEventListeners() {
     // Paint type change
-    elements.paintTypeSelect.addEventListener('change', onPaintTypeChange);
+    if (elements.paintTypeSelect) {
+        elements.paintTypeSelect.addEventListener('change', onPaintTypeChange);
+    }
 
     // Material type change
-    elements.materialTypeSelect.addEventListener('change', onMaterialTypeChange);
+    if (elements.materialTypeSelect) {
+        elements.materialTypeSelect.addEventListener('change', onMaterialTypeChange);
+    }
 
     // Cancel action - just resets the form
-    elements.cancelActionBtn.addEventListener('click', resetActionForm);
+    if (elements.cancelActionBtn) {
+        elements.cancelActionBtn.addEventListener('click', resetActionForm);
+    }
 
     // Confirm action
-    elements.confirmActionBtn.addEventListener('click', addAction);
+    if (elements.confirmActionBtn) {
+        elements.confirmActionBtn.addEventListener('click', addAction);
+    }
 
     // Add action button (show form again)
     const addActionBtn = document.getElementById('add-action-btn');
@@ -308,9 +316,11 @@ function setupEventListeners() {
     }
 
     // Category tabs
-    elements.categoryTabs.forEach(tab => {
-        tab.addEventListener('click', () => switchCategory(tab.dataset.category));
-    });
+    if (elements.categoryTabs && elements.categoryTabs.length > 0) {
+        elements.categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => switchCategory(tab.dataset.category));
+        });
+    }
 
     // Time buttons - compact version
     document.addEventListener('click', (e) => {
