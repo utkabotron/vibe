@@ -504,7 +504,7 @@ textarea::placeholder {
 .form-group {
     background: var(--bg-secondary);
     border-radius: 12px;
-    margin: 0 var(--space-md) var(--space-xl);
+    margin: var(--space-base) var(--space-md) var(--space-xl);
     overflow: hidden;
     box-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.04);
 }
@@ -534,7 +534,7 @@ textarea::placeholder {
     padding: 2px;
     background: rgba(118, 118, 128, 0.12);
     border-radius: 9px;
-    margin: var(--space-md) var(--space-md) 0;
+    margin: var(--space-md) var(--space-md) var(--space-md);
 }
 
 .tab {
