@@ -15,24 +15,33 @@
                 <h1>Новый отчёт</h1>
             </header>
 
-            <!-- Category Tabs -->
-            <div class="category-tabs">
-                <button class="tab active" data-category="labour">
-                    <span class="tab-label">Работы</span>
-                </button>
-                <button class="tab" data-category="paint">
-                    <span class="tab-label">ЛКМ</span>
-                </button>
-                <button class="tab" data-category="materials">
-                    <span class="tab-label">Плита</span>
-                </button>
-                <button class="tab" data-category="defect">
-                    <span class="tab-label">Брак</span>
-                </button>
-            </div>
+            <!-- Form Group (Tabs + Form together) -->
+            <div class="form-group">
+                <!-- Category Tabs -->
+                <div class="category-tabs">
+                    <button class="tab active" data-category="labour">
+                        <span class="tab-icon" data-icon="labour"></span>
+                        <span class="tab-label">Работы</span>
+                    </button>
+                    <button class="tab" data-category="paint">
+                        <span class="tab-icon" data-icon="paint"></span>
+                        <span class="tab-label">ЛКМ</span>
+                    </button>
+                    <button class="tab" data-category="materials">
+                        <span class="tab-icon" data-icon="materials"></span>
+                        <span class="tab-label">Плита</span>
+                    </button>
+                    <button class="tab" data-category="defect">
+                        <span class="tab-icon" data-icon="defect"></span>
+                        <span class="tab-label">Брак</span>
+                    </button>
+                </div>
 
-            <!-- Action Form -->
-            <div id="action-form-container" class="section">
+                <!-- Separator -->
+                <div class="form-separator"></div>
+
+                <!-- Action Form -->
+                <div id="action-form-container">
                 <div id="action-form" class="action-form">
                     <!-- Common Fields (project, product) -->
                     <div class="field">
@@ -170,6 +179,7 @@
                     <div class="form-actions">
                         <button id="confirm-action-btn" class="btn-primary">Добавить</button>
                     </div>
+                </div>
                 </div>
             </div>
 
