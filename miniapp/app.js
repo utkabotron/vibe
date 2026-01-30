@@ -127,8 +127,10 @@ function initTelegram() {
         tg.MainButton.setText('Отправить отчёт');
         tg.MainButton.onClick(submitReport);
 
-        // Enable closing confirmation
-        tg.enableClosingConfirmation();
+        // Enable closing confirmation (supported from Telegram 6.2+)
+        if (tg.version && parseFloat(tg.version) >= 6.2) {
+            tg.enableClosingConfirmation();
+        }
 
         // Get user data
         if (tg.initDataUnsafe?.user) {
