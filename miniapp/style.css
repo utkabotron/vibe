@@ -1118,6 +1118,151 @@ textarea::placeholder {
     opacity: 0.6;
 }
 
+/* === Wizard Screens === */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* === Wizard Header === */
+.wizard-header {
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary);
+    padding: var(--space-md);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    border-bottom: 1px solid var(--separator-subtle);
+}
+
+.back-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-primary);
+    padding: var(--space-xs);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity var(--transition-fast);
+}
+
+.back-btn:active {
+    opacity: 0.6;
+}
+
+.wizard-breadcrumb {
+    flex: 1;
+    min-width: 0;
+}
+
+.wizard-breadcrumb-title {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.wizard-breadcrumb-value,
+.wizard-breadcrumb-full {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* === Wizard Section === */
+.wizard-section {
+    padding: var(--space-md);
+}
+
+.wizard-section-title {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: var(--space-md);
+    font-weight: var(--weight-semibold);
+}
+
+/* === Wizard List (Projects/Products) === */
+.wizard-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.wizard-list-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--separator-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-base) var(--space-md);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-align: left;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.wizard-list-item:active {
+    background: var(--state-hover);
+    transform: scale(0.98);
+}
+
+/* === Actions Summary === */
+.actions-summary {
+    margin: var(--space-lg) var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    border: 1px solid var(--separator-subtle);
+}
+
+.actions-summary-header {
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--separator-subtle);
+}
+
+.actions-count {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.actions-count strong {
+    color: var(--accent-primary);
+    font-weight: var(--weight-semibold);
+}
+
+/* === Form Container === */
+.form-container {
+    padding: var(--space-md);
+}
+
+.form-title {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+/* === Category Tabs (updated for screen-projects) === */
+.category-tabs {
+    margin: var(--space-md);
+}
+
 /* === Utilities === */
 .hidden {
     display: none !important;

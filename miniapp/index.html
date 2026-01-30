@@ -10,198 +10,215 @@
 </head>
 <body>
     <div id="app">
-        <!-- Single Screen -->
-        <div id="screen-main" class="screen">
+        <!-- Screen 1: Projects Selection -->
+        <div id="screen-projects" class="screen active">
             <header class="header">
                 <h1>Новый отчёт</h1>
             </header>
 
-            <!-- Form Group (Tabs + Form together) -->
-            <div class="form-group">
-                <!-- Category Tabs -->
-                <div class="category-tabs">
-                    <button class="tab active" data-category="labour">
-                        <span class="tab-icon" data-icon="labour"></span>
-                        <span class="tab-label">Работы</span>
-                    </button>
-                    <button class="tab" data-category="paint">
-                        <span class="tab-icon" data-icon="paint"></span>
-                        <span class="tab-label">ЛКМ</span>
-                    </button>
-                    <button class="tab" data-category="materials">
-                        <span class="tab-icon" data-icon="materials"></span>
-                        <span class="tab-label">Плита</span>
-                    </button>
-                    <button class="tab" data-category="defect">
-                        <span class="tab-icon" data-icon="defect"></span>
-                        <span class="tab-label">Брак</span>
-                    </button>
-                </div>
+            <!-- Category Tabs -->
+            <div class="category-tabs">
+                <button class="tab active" data-category="labour">
+                    <span class="tab-icon" data-icon="labour"></span>
+                    <span class="tab-label">Работы</span>
+                </button>
+                <button class="tab" data-category="paint">
+                    <span class="tab-icon" data-icon="paint"></span>
+                    <span class="tab-label">ЛКМ</span>
+                </button>
+                <button class="tab" data-category="materials">
+                    <span class="tab-icon" data-icon="materials"></span>
+                    <span class="tab-label">Плита</span>
+                </button>
+                <button class="tab" data-category="defect">
+                    <span class="tab-icon" data-icon="defect"></span>
+                    <span class="tab-label">Брак</span>
+                </button>
+            </div>
 
-                <!-- Separator -->
-                <div class="form-separator"></div>
-
-                <!-- Action Form -->
-                <div id="action-form-container">
-                <div id="action-form" class="action-form">
-                    <!-- Common Fields (project, product) -->
-                    <div class="field">
-                        <label>Проект</label>
-                        <div class="select-wrapper">
-                            <select id="project-select">
-                                <option value="">Выберите проект</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <label>Изделие</label>
-                        <div class="select-wrapper">
-                            <select id="product-select" disabled>
-                                <option value="">Сначала выберите проект</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Labour Form -->
-                    <div id="form-labour" class="form-content active">
-                        <div class="field">
-                            <label>Вид работы</label>
-                            <div class="select-wrapper">
-                                <select id="labour-type-select">
-                                    <option value="">Выберите</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="time-picker-compact">
-                            <div class="time-picker-header">
-                                <label>Время работы</label>
-                                <span id="selected-time-display" class="selected-time">0:00</span>
-                            </div>
-
-                            <div class="time-section-compact">
-                                <div class="time-section-label">Часы</div>
-                                <div class="time-buttons-row">
-                                    <button class="time-btn" data-type="hours" data-value="1">1</button>
-                                    <button class="time-btn" data-type="hours" data-value="2">2</button>
-                                    <button class="time-btn" data-type="hours" data-value="3">3</button>
-                                    <button class="time-btn" data-type="hours" data-value="4">4</button>
-                                </div>
-                                <div class="time-buttons-row">
-                                    <button class="time-btn" data-type="hours" data-value="5">5</button>
-                                    <button class="time-btn" data-type="hours" data-value="6">6</button>
-                                    <button class="time-btn" data-type="hours" data-value="7">7</button>
-                                    <button class="time-btn" data-type="hours" data-value="8">8</button>
-                                </div>
-                            </div>
-
-                            <div class="time-section-compact">
-                                <div class="time-section-label">Минуты</div>
-                                <div class="time-buttons-row">
-                                    <button class="time-btn" data-type="minutes" data-value="15">15</button>
-                                    <button class="time-btn" data-type="minutes" data-value="30">30</button>
-                                    <button class="time-btn" data-type="minutes" data-value="45">45</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label>Комментарий <span class="optional">(необязательно)</span></label>
-                            <textarea id="labour-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Paint Form -->
-                    <div id="form-paint" class="form-content">
-                        <div class="field">
-                            <label>Тип ЛКМ</label>
-                            <div class="select-wrapper">
-                                <select id="paint-type-select">
-                                    <option value="">Выберите</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Материал</label>
-                            <div class="select-wrapper">
-                                <select id="paint-material-select" disabled>
-                                    <option value="">Сначала выберите тип</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Количество (л)</label>
-                            <input type="number" id="paint-quantity" step="0.1" min="0" placeholder="0.0">
-                        </div>
-                        <div class="field">
-                            <label>Комментарий <span class="optional">(необязательно)</span></label>
-                            <textarea id="paint-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Materials Form -->
-                    <div id="form-materials" class="form-content">
-                        <div class="field">
-                            <label>Тип материала</label>
-                            <div class="select-wrapper">
-                                <select id="material-type-select">
-                                    <option value="">Выберите</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Материал</label>
-                            <div class="select-wrapper">
-                                <select id="material-select" disabled>
-                                    <option value="">Сначала выберите тип</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Количество</label>
-                            <input type="number" id="material-quantity" step="0.1" min="0" placeholder="0.0">
-                        </div>
-                        <div class="field">
-                            <label>Комментарий <span class="optional">(необязательно)</span></label>
-                            <textarea id="materials-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Defect Form -->
-                    <div id="form-defect" class="form-content">
-                        <div class="field">
-                            <label>Комментарий</label>
-                            <textarea id="defect-comment" rows="2" placeholder="Опишите брак..." required></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="form-actions">
-                        <button id="confirm-action-btn" class="btn-primary">Добавить</button>
-                    </div>
-                </div>
+            <!-- Projects List -->
+            <div class="wizard-section">
+                <div class="wizard-section-title">Выберите проект</div>
+                <div id="projects-list" class="wizard-list">
+                    <!-- Projects will be rendered here -->
                 </div>
             </div>
 
-            <!-- Actions List -->
-            <section class="section">
+            <!-- Actions Summary -->
+            <div id="actions-summary" class="actions-summary hidden">
+                <div class="actions-summary-header">
+                    <span class="actions-count">Добавлено действий: <strong id="actions-count">0</strong></span>
+                </div>
                 <div id="actions-list" class="actions-list">
                     <!-- Actions will be rendered here -->
                 </div>
-
-                <!-- Add Action Button (shown after first action added) -->
-                <button id="add-action-btn" class="add-action-btn hidden">
-                    Добавить действие
-                </button>
-            </section>
-
+            </div>
 
             <!-- Submit Report Button -->
-            <div class="submit-section">
-                <button id="submit-btn" class="submit-btn" disabled>
+            <div class="submit-section hidden" id="submit-section">
+                <button id="submit-btn" class="submit-btn">
                     Отправить отчёт
                 </button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Products Selection -->
+        <div id="screen-products" class="screen">
+            <header class="wizard-header">
+                <button class="back-btn" id="products-back-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="wizard-breadcrumb">
+                    <div class="wizard-breadcrumb-title">Проект:</div>
+                    <div class="wizard-breadcrumb-value" id="breadcrumb-project">—</div>
+                </div>
+            </header>
+
+            <div class="wizard-section">
+                <div class="wizard-section-title">Выберите изделие</div>
+                <div id="products-list" class="wizard-list">
+                    <!-- Products will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Category Form -->
+        <div id="screen-form" class="screen">
+            <header class="wizard-header">
+                <button class="back-btn" id="form-back-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="wizard-breadcrumb">
+                    <div class="wizard-breadcrumb-full" id="breadcrumb-full">
+                        <span id="breadcrumb-full-project">—</span> / <span id="breadcrumb-full-product">—</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <h2 id="form-category-title" class="form-title">Работы</h2>
+
+                <!-- Labour Form -->
+                <div id="form-labour" class="form-content active">
+                    <div class="field">
+                        <label>Вид работы</label>
+                        <div class="select-wrapper">
+                            <select id="labour-type-select">
+                                <option value="">Выберите</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="time-picker-compact">
+                        <div class="time-picker-header">
+                            <label>Время работы</label>
+                            <span id="selected-time-display" class="selected-time">0:00</span>
+                        </div>
+
+                        <div class="time-section-compact">
+                            <div class="time-section-label">Часы</div>
+                            <div class="time-buttons-row">
+                                <button class="time-btn" data-type="hours" data-value="1">1</button>
+                                <button class="time-btn" data-type="hours" data-value="2">2</button>
+                                <button class="time-btn" data-type="hours" data-value="3">3</button>
+                                <button class="time-btn" data-type="hours" data-value="4">4</button>
+                            </div>
+                            <div class="time-buttons-row">
+                                <button class="time-btn" data-type="hours" data-value="5">5</button>
+                                <button class="time-btn" data-type="hours" data-value="6">6</button>
+                                <button class="time-btn" data-type="hours" data-value="7">7</button>
+                                <button class="time-btn" data-type="hours" data-value="8">8</button>
+                            </div>
+                        </div>
+
+                        <div class="time-section-compact">
+                            <div class="time-section-label">Минуты</div>
+                            <div class="time-buttons-row">
+                                <button class="time-btn" data-type="minutes" data-value="15">15</button>
+                                <button class="time-btn" data-type="minutes" data-value="30">30</button>
+                                <button class="time-btn" data-type="minutes" data-value="45">45</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Комментарий <span class="optional">(необязательно)</span></label>
+                        <textarea id="labour-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Paint Form -->
+                <div id="form-paint" class="form-content">
+                    <div class="field">
+                        <label>Тип ЛКМ</label>
+                        <div class="select-wrapper">
+                            <select id="paint-type-select">
+                                <option value="">Выберите</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Материал</label>
+                        <div class="select-wrapper">
+                            <select id="paint-material-select" disabled>
+                                <option value="">Сначала выберите тип</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Количество (л)</label>
+                        <input type="number" id="paint-quantity" step="0.1" min="0" placeholder="0.0">
+                    </div>
+                    <div class="field">
+                        <label>Комментарий <span class="optional">(необязательно)</span></label>
+                        <textarea id="paint-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Materials Form -->
+                <div id="form-materials" class="form-content">
+                    <div class="field">
+                        <label>Тип материала</label>
+                        <div class="select-wrapper">
+                            <select id="material-type-select">
+                                <option value="">Выберите</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Материал</label>
+                        <div class="select-wrapper">
+                            <select id="material-select" disabled>
+                                <option value="">Сначала выберите тип</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Количество</label>
+                        <input type="number" id="material-quantity" step="0.1" min="0" placeholder="0.0">
+                    </div>
+                    <div class="field">
+                        <label>Комментарий <span class="optional">(необязательно)</span></label>
+                        <textarea id="materials-comment" rows="2" placeholder="Добавьте комментарий..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Defect Form -->
+                <div id="form-defect" class="form-content">
+                    <div class="field">
+                        <label>Комментарий</label>
+                        <textarea id="defect-comment" rows="2" placeholder="Опишите брак..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button id="add-action-btn" class="btn-primary">Добавить действие</button>
+                </div>
             </div>
         </div>
     </div>
@@ -212,7 +229,7 @@
         <p>Загрузка...</p>
     </div>
 
-    <!-- Error Toast -->
+    <!-- Toast -->
     <div id="toast" class="toast hidden"></div>
 
     <script src="icons.js"></script>

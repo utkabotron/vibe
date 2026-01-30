@@ -20,6 +20,14 @@ const state = {
     // Selected material data (for getting unit)
     selectedPaintMaterial: null,
     selectedMaterial: null,
+    // Wizard navigation state
+    wizard: {
+        currentStep: 'projects',  // projects | products | form
+        selectedProjectId: null,
+        selectedProjectName: null,
+        selectedProductId: null,
+        selectedProductName: null
+    }
 };
 
 // === DOM Elements ===
@@ -69,6 +77,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup event listeners
     setupEventListeners();
+
+    // Setup wizard event listeners
+    setupWizardEventListeners();
+
+    // Initialize wizard (go to projects screen)
+    goToStep('projects');
 
     // Check for pending reports
     await checkPendingReports();
@@ -525,39 +539,29 @@ async function addAction() {
     const actions = [...(state.currentDraft.actions || []), action];
     await updateDraft({ actions });
 
-    // Render
-    renderActions();
-
-    // Reset form and hide it
+    // Reset form
     resetActionForm();
-
-    const formContainer = document.getElementById('action-form-container');
-    const addBtn = document.getElementById('add-action-btn');
-
-    if (formContainer) formContainer.style.display = 'none';
-    if (addBtn) addBtn.classList.remove('hidden');
-
-    updateMainButton();
 
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
 
+    // Show toast and return to projects screen (auto-return)
     showToast('Действие добавлено', 'success');
+    goToStep('projects');
 }
 
 function buildCurrentAction() {
     const category = state.currentCategory;
 
-    // Validate project and product are selected
-    const projectId = elements.projectSelect.value;
-    const productId = elements.productSelect.value;
+    // Get project and product from wizard state
+    const projectId = state.wizard.selectedProjectId;
+    const productId = state.wizard.selectedProductId;
+    const projectName = state.wizard.selectedProjectName;
+    const productName = state.wizard.selectedProductName;
 
     if (!projectId || !productId) return null;
-
-    const projectName = elements.projectSelect.options[elements.projectSelect.selectedIndex].text;
-    const productName = elements.productSelect.options[elements.productSelect.selectedIndex].text;
 
     switch (category) {
         case 'labour': {
@@ -839,15 +843,14 @@ async function submitReport() {
                 const newDraft = await vibeDB.createDraft({});
                 state.currentDraft = newDraft;
 
-                // Clear form and show it
-                resetActionForm();
-                const formContainer = document.getElementById('action-form-container');
-                const addBtn = document.getElementById('add-action-btn');
-                if (formContainer) formContainer.style.display = 'block';
-                if (addBtn) addBtn.classList.add('hidden');
+                // Clear wizard state
+                state.wizard.selectedProjectId = null;
+                state.wizard.selectedProjectName = null;
+                state.wizard.selectedProductId = null;
+                state.wizard.selectedProductName = null;
 
-                // Render empty list
-                renderActions();
+                // Clear form
+                resetActionForm();
 
                 // Haptic
                 if (tg?.HapticFeedback) {
@@ -858,6 +861,9 @@ async function submitReport() {
                 state.reportsSentThisSession = (state.reportsSentThisSession || 0) + 1;
 
                 showToast(`Отчёт отправлен!`, 'success');
+
+                // Return to projects screen
+                goToStep('projects');
 
             } else {
                 throw new Error('Failed to submit');
@@ -870,21 +876,23 @@ async function submitReport() {
             const newDraft = await vibeDB.createDraft({});
             state.currentDraft = newDraft;
 
-            // Clear form and show it
-            resetActionForm();
-            const formContainer = document.getElementById('action-form-container');
-            const addBtn = document.getElementById('add-action-btn');
-            if (formContainer) formContainer.style.display = 'block';
-            if (addBtn) addBtn.classList.add('hidden');
+            // Clear wizard state
+            state.wizard.selectedProjectId = null;
+            state.wizard.selectedProjectName = null;
+            state.wizard.selectedProductId = null;
+            state.wizard.selectedProductName = null;
 
-            // Render empty list
-            renderActions();
+            // Clear form
+            resetActionForm();
 
             // Increment counter (pending also counts)
             state.reportsSentThisSession = (state.reportsSentThisSession || 0) + 1;
 
             showToast(`Отчёт сохранён. Отправится при подключении`, 'success');
             await checkPendingReports();
+
+            // Return to projects screen
+            goToStep('projects');
         }
 
     } catch (error) {
@@ -1583,5 +1591,200 @@ function changeProject() {
     showProjectSelectionModal();
 }
 
+// === Wizard Navigation ===
+function goToStep(step) {
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+
+    // Show target screen
+    const targetScreen = document.getElementById(`screen-${step}`);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        state.wizard.currentStep = step;
+    }
+
+    // Update breadcrumb
+    updateBreadcrumb();
+
+    // Render content based on step
+    if (step === 'projects') {
+        renderProjectsList();
+        updateActionsDisplay();
+    } else if (step === 'products') {
+        renderProductsList();
+    } else if (step === 'form') {
+        // Show appropriate form based on category
+        showCategoryForm(state.currentCategory);
+    }
+}
+
+function selectProject(projectId, projectName) {
+    state.wizard.selectedProjectId = projectId;
+    state.wizard.selectedProjectName = projectName;
+    goToStep('products');
+}
+
+function selectProduct(productId, productName) {
+    state.wizard.selectedProductId = productId;
+    state.wizard.selectedProductName = productName;
+    goToStep('form');
+}
+
+function renderProjectsList() {
+    const projectsList = document.getElementById('projects-list');
+    if (!projectsList) return;
+
+    if (!state.references || !state.references.projects) {
+        projectsList.innerHTML = '<p style="color: var(--text-secondary); padding: var(--space-md); text-align: center;">Загрузка проектов...</p>';
+        return;
+    }
+
+    const projects = state.references.projects;
+    if (projects.length === 0) {
+        projectsList.innerHTML = '<p style="color: var(--text-secondary); padding: var(--space-md); text-align: center;">Нет доступных проектов</p>';
+        return;
+    }
+
+    projectsList.innerHTML = projects.map(project => {
+        const projectId = project.project_id || project.id;
+        const projectName = project.project_name || project.name || projectId;
+        return `
+            <button class="wizard-list-item" onclick="selectProject('${projectId}', '${projectName.replace(/'/g, "\\'")}')">
+                ${projectName}
+            </button>
+        `;
+    }).join('');
+}
+
+function renderProductsList() {
+    const productsList = document.getElementById('products-list');
+    if (!productsList) return;
+
+    const projectId = state.wizard.selectedProjectId;
+    if (!projectId) {
+        productsList.innerHTML = '<p style="color: var(--text-secondary); padding: var(--space-md); text-align: center;">Проект не выбран</p>';
+        return;
+    }
+
+    const products = state.references?.products?.[projectId] || [];
+    if (products.length === 0) {
+        productsList.innerHTML = '<p style="color: var(--text-secondary); padding: var(--space-md); text-align: center;">Нет изделий для этого проекта</p>';
+        return;
+    }
+
+    productsList.innerHTML = products.map(product => {
+        const productId = product.product_id || product.id;
+        const productName = product.product_name || product.name || productId;
+        return `
+            <button class="wizard-list-item" onclick="selectProduct('${productId}', '${productName.replace(/'/g, "\\'")}')">
+                ${productName}
+            </button>
+        `;
+    }).join('');
+}
+
+function updateBreadcrumb() {
+    // Update breadcrumb on products screen
+    const breadcrumbProject = document.getElementById('breadcrumb-project');
+    if (breadcrumbProject) {
+        breadcrumbProject.textContent = state.wizard.selectedProjectName || '—';
+    }
+
+    // Update breadcrumb on form screen
+    const breadcrumbFullProject = document.getElementById('breadcrumb-full-project');
+    const breadcrumbFullProduct = document.getElementById('breadcrumb-full-product');
+    if (breadcrumbFullProject) {
+        breadcrumbFullProject.textContent = state.wizard.selectedProjectName || '—';
+    }
+    if (breadcrumbFullProduct) {
+        breadcrumbFullProduct.textContent = state.wizard.selectedProductName || '—';
+    }
+}
+
+function showCategoryForm(category) {
+    // Hide all forms
+    document.querySelectorAll('.form-content').forEach(form => {
+        form.classList.remove('active');
+    });
+
+    // Show selected form
+    const targetForm = document.getElementById(`form-${category}`);
+    if (targetForm) {
+        targetForm.classList.add('active');
+    }
+
+    // Update form title
+    const formTitle = document.getElementById('form-category-title');
+    const categoryTitles = {
+        'labour': 'Работы',
+        'paint': 'ЛКМ',
+        'materials': 'Плита',
+        'defect': 'Брак'
+    };
+    if (formTitle) {
+        formTitle.textContent = categoryTitles[category] || 'Работы';
+    }
+}
+
+function updateActionsDisplay() {
+    const actionsSection = document.getElementById('actions-summary');
+    const submitSection = document.getElementById('submit-section');
+    const actionsCount = document.getElementById('actions-count');
+
+    if (!state.currentDraft || !state.currentDraft.actions || state.currentDraft.actions.length === 0) {
+        actionsSection?.classList.add('hidden');
+        submitSection?.classList.add('hidden');
+    } else {
+        actionsSection?.classList.remove('hidden');
+        submitSection?.classList.remove('hidden');
+        if (actionsCount) {
+            actionsCount.textContent = state.currentDraft.actions.length;
+        }
+        renderActions();
+    }
+}
+
+function setupWizardEventListeners() {
+    // Back button on products screen
+    const productsBackBtn = document.getElementById('products-back-btn');
+    if (productsBackBtn) {
+        productsBackBtn.addEventListener('click', () => {
+            goToStep('projects');
+        });
+    }
+
+    // Back button on form screen
+    const formBackBtn = document.getElementById('form-back-btn');
+    if (formBackBtn) {
+        formBackBtn.addEventListener('click', () => {
+            goToStep('products');
+        });
+    }
+
+    // Category tabs on projects screen
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const category = tab.dataset.category;
+
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Update state
+            state.currentCategory = category;
+
+            // If on form screen, update form
+            if (state.wizard.currentStep === 'form') {
+                showCategoryForm(category);
+            }
+        });
+    });
+}
+
 // === Make functions global for onclick ===
 window.deleteAction = deleteAction;
+window.selectProject = selectProject;
+window.selectProduct = selectProduct;
