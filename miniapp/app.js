@@ -345,14 +345,10 @@ function setupEventListeners() {
         elements.confirmActionBtn.addEventListener('click', addAction);
     }
 
-    // Add action button (show form again)
+    // Add action button - adds action and returns to projects
     const addActionBtn = document.getElementById('add-action-btn');
     if (addActionBtn) {
-        addActionBtn.addEventListener('click', () => {
-            const formContainer = document.getElementById('action-form-container');
-            if (formContainer) formContainer.style.display = 'block';
-            addActionBtn.classList.add('hidden');
-        });
+        addActionBtn.addEventListener('click', addAction);
     }
 
     // Category tabs
