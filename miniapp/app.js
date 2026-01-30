@@ -43,6 +43,7 @@ const elements = {
     timeValue: null,
     hoursButtons: null,
     minutesButtons: null,
+    selectedTimeDisplay: null,
     comment: null,
     pendingIndicator: null,
     pendingCount: null,
@@ -94,6 +95,7 @@ function cacheElements() {
     elements.timeValue = document.getElementById('time-value');
     elements.hoursButtons = document.querySelectorAll('.time-buttons.hours button');
     elements.minutesButtons = document.querySelectorAll('.time-buttons.minutes button');
+    elements.selectedTimeDisplay = document.getElementById('selected-time-display');
     elements.comment = document.getElementById('comment');
     elements.pendingIndicator = document.getElementById('pending-indicator');
     elements.pendingCount = document.getElementById('pending-count');
@@ -413,16 +415,31 @@ function selectTimeCompact(btn) {
         state.selectedMinutes = value;
     }
 
+    // Update time display
+    updateTimeDisplay();
+
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.selectionChanged();
     }
 }
 
+function updateTimeDisplay() {
+    if (!elements.selectedTimeDisplay) return;
+
+    const hours = state.selectedHours || 0;
+    const minutes = state.selectedMinutes || 0;
+
+    // Format as H:MM (without leading zero for hours)
+    const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+    elements.selectedTimeDisplay.textContent = formattedTime;
+}
+
 function resetTimeSelection() {
     state.selectedHours = null;
     state.selectedMinutes = null;
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+    updateTimeDisplay();
 }
 
 // === Category Switching ===
