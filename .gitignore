@@ -24,6 +24,8 @@ build/
 
 # Secrets
 config/*.json
+*.json
+!package.json
 key.txt
 
 # More secrets

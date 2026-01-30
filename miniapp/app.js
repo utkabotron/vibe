@@ -1422,11 +1422,6 @@ function populateProductSelect(projectId) {
             return `<option value="${productId}">${productName}</option>`;
         }).join('');
 }
-        projectName: project.project_name || project.name,
-        productId: null,
-        productName: null
-    });
-}
 
 
 // === Project/Product Selection Modal (deprecated - keeping for compatibility) ===
