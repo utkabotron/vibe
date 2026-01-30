@@ -904,10 +904,16 @@ async function checkPendingReports() {
     const count = await vibeDB.getPendingCount();
 
     if (count > 0) {
-        elements.pendingCount.textContent = count;
-        elements.pendingIndicator.classList.remove('hidden');
+        if (elements.pendingCount) {
+            elements.pendingCount.textContent = count;
+        }
+        if (elements.pendingIndicator) {
+            elements.pendingIndicator.classList.remove('hidden');
+        }
     } else {
-        elements.pendingIndicator.classList.add('hidden');
+        if (elements.pendingIndicator) {
+            elements.pendingIndicator.classList.add('hidden');
+        }
     }
 }
 
