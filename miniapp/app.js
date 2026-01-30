@@ -5,6 +5,28 @@
 // === Configuration ===
 const API_BASE = '/api/miniapp';
 
+// === Helpers ===
+// Safe haptic feedback - only works in Telegram 6.1+
+function triggerHaptic(type, method) {
+    const tg = window.Telegram?.WebApp;
+    if (!tg?.HapticFeedback) return;
+
+    // HapticFeedback was added in version 6.1
+    if (tg.version && parseFloat(tg.version) < 6.1) return;
+
+    try {
+        if (method === 'impact' && tg.HapticFeedback.impactOccurred) {
+            tg.HapticFeedback.impactOccurred(type);
+        } else if (method === 'notification' && tg.HapticFeedback.notificationOccurred) {
+            tg.HapticFeedback.notificationOccurred(type);
+        } else if (method === 'selection' && tg.HapticFeedback.selectionChanged) {
+            tg.HapticFeedback.selectionChanged();
+        }
+    } catch (e) {
+        // Silently fail if haptic is not supported
+    }
+}
+
 // === State ===
 const state = {
     user: null,
@@ -435,9 +457,7 @@ function selectTimeCompact(btn) {
     updateTimeDisplay();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.selectionChanged();
-    }
+    triggerHaptic('medium', 'selection');
 }
 
 function updateTimeDisplay() {
@@ -474,9 +494,7 @@ function switchCategory(category) {
     document.getElementById(`form-${category}`).classList.add('active');
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.selectionChanged();
-    }
+    triggerHaptic('medium', 'selection');
 }
 
 // === Action Form ===
@@ -543,9 +561,7 @@ async function addAction() {
     resetActionForm();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
+    triggerHaptic('success', 'notification');
 
     // Show toast and return to projects screen (auto-return)
     showToast('Действие добавлено', 'success');
@@ -703,9 +719,7 @@ async function deleteAction(index) {
     renderActions();
     updateMainButton();
 
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
-    }
+    triggerHaptic('warning', 'notification');
 }
 
 // === Render ===
@@ -853,9 +867,7 @@ async function submitReport() {
                 resetActionForm();
 
                 // Haptic
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.notificationOccurred('success');
-                }
+                triggerHaptic('success', 'notification');
 
                 // Increment sent counter
                 state.reportsSentThisSession = (state.reportsSentThisSession || 0) + 1;
@@ -1015,9 +1027,7 @@ function showCategorySelection() {
     document.body.style.overflow = 'hidden';
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
+    triggerHaptic('light', 'impact');
 }
 
 function selectCategory(category) {
@@ -1056,9 +1066,7 @@ function showActionFormModal(category) {
     document.body.style.overflow = 'hidden';
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
+    triggerHaptic('light', 'impact');
 }
 
 function getFormTemplate(category) {
@@ -1228,9 +1236,7 @@ function closeModal() {
     resetSimpleTimePicker();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
+    triggerHaptic('light', 'impact');
 }
 
 function backToCategories() {
@@ -1256,9 +1262,7 @@ async function addActionFromModal() {
     updateMainButton();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
+    triggerHaptic('success', 'notification');
 
     showToast('Действие добавлено', 'success');
 }
@@ -1372,9 +1376,7 @@ function selectTimePreset(minutes) {
     updateSimpleTimeDisplay();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.selectionChanged();
-    }
+    triggerHaptic('medium', 'selection');
 }
 
 function adjustTime(delta) {
@@ -1392,9 +1394,7 @@ function adjustTime(delta) {
     updateSimpleTimeDisplay();
 
     // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.selectionChanged();
-    }
+    triggerHaptic('medium', 'selection');
 }
 
 function updateSimpleTimeDisplay() {
