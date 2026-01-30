@@ -526,15 +526,24 @@ textarea::placeholder {
     display: none;
 }
 
-/* === Category Tabs - Compact === */
+/* === Category Tabs - Compact & Sticky === */
 .category-tabs {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 2px;
     padding: 2px;
-    background: rgba(118, 118, 128, 0.12);
     border-radius: 9px;
-    margin: var(--space-md) var(--space-md) var(--space-md);
+    margin: var(--space-md);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    background: linear-gradient(
+        to bottom,
+        rgba(242, 242, 247, 0.98),
+        rgba(242, 242, 247, 0.95)
+    );
+    box-shadow: inset 0 0 0 2px rgba(118, 118, 128, 0.12);
 }
 
 .tab {
@@ -1130,10 +1139,10 @@ textarea::placeholder {
 /* === Wizard Header === */
 .wizard-header {
     position: sticky;
-    top: 0;
+    top: 70px;
     background: var(--bg-primary);
     padding: var(--space-md);
-    z-index: 10;
+    z-index: 50;
     display: flex;
     align-items: center;
     gap: var(--space-md);
@@ -1256,11 +1265,6 @@ textarea::placeholder {
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
     margin-bottom: var(--space-md);
-}
-
-/* === Category Tabs (updated for screen-projects) === */
-.category-tabs {
-    margin: var(--space-md);
 }
 
 /* === Utilities === */

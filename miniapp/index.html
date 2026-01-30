@@ -10,32 +10,28 @@
 </head>
 <body>
     <div id="app">
+        <!-- Category Tabs - Always Visible -->
+        <div class="category-tabs">
+            <button class="tab active" data-category="labour">
+                <span class="tab-icon" data-icon="labour"></span>
+                <span class="tab-label">Работы</span>
+            </button>
+            <button class="tab" data-category="paint">
+                <span class="tab-icon" data-icon="paint"></span>
+                <span class="tab-label">ЛКМ</span>
+            </button>
+            <button class="tab" data-category="materials">
+                <span class="tab-icon" data-icon="materials"></span>
+                <span class="tab-label">Плита</span>
+            </button>
+            <button class="tab" data-category="defect">
+                <span class="tab-icon" data-icon="defect"></span>
+                <span class="tab-label">Брак</span>
+            </button>
+        </div>
+
         <!-- Screen 1: Projects Selection -->
         <div id="screen-projects" class="screen active">
-            <header class="header">
-                <h1>Новый отчёт</h1>
-            </header>
-
-            <!-- Category Tabs -->
-            <div class="category-tabs">
-                <button class="tab active" data-category="labour">
-                    <span class="tab-icon" data-icon="labour"></span>
-                    <span class="tab-label">Работы</span>
-                </button>
-                <button class="tab" data-category="paint">
-                    <span class="tab-icon" data-icon="paint"></span>
-                    <span class="tab-label">ЛКМ</span>
-                </button>
-                <button class="tab" data-category="materials">
-                    <span class="tab-icon" data-icon="materials"></span>
-                    <span class="tab-label">Плита</span>
-                </button>
-                <button class="tab" data-category="defect">
-                    <span class="tab-icon" data-icon="defect"></span>
-                    <span class="tab-label">Брак</span>
-                </button>
-            </div>
-
             <!-- Projects List -->
             <div class="wizard-section">
                 <div class="wizard-section-title">Выберите проект</div>
