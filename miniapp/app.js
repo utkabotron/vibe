@@ -128,7 +128,7 @@ function initTelegram() {
         tg.MainButton.onClick(submitReport);
 
         // Enable closing confirmation (supported from Telegram 6.2+)
-        if (tg.version && parseFloat(tg.version) >= 6.2) {
+        if (typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast('6.2')) {
             tg.enableClosingConfirmation();
         }
 
