@@ -241,7 +241,7 @@ body {
 
 /* === Fields === */
 .field {
-    margin-bottom: var(--space-base);
+    margin-bottom: var(--space-md);
 }
 
 .field:last-child {
@@ -252,7 +252,7 @@ body {
     display: block;
     font-size: var(--text-base);
     font-weight: var(--weight-regular);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
     color: var(--text-primary);
     line-height: var(--leading-normal);
 }
@@ -290,7 +290,7 @@ body {
 
 select {
     width: 100%;
-    padding: var(--space-md) 32px var(--space-md) var(--space-base);
+    padding: 12px 32px 12px 12px;
     font-size: var(--text-base);
     font-weight: var(--weight-regular);
     color: var(--text-primary);
@@ -322,7 +322,7 @@ select:disabled {
 input[type="number"],
 textarea {
     width: 100%;
-    padding: var(--space-md);
+    padding: 12px;
     font-size: var(--text-base);
     font-weight: var(--weight-regular);
     color: var(--text-primary);
