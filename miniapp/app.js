@@ -734,14 +734,14 @@ function renderActions() {
         elements.submitBtn.disabled = actions.length === 0;
     }
 
-    // Show/hide form and add button
-    const formContainer = document.getElementById('action-form-container');
+    // Show add button on form screen (always visible there)
     const addBtn = document.getElementById('add-action-btn');
+    if (addBtn) {
+        addBtn.classList.remove('hidden');
+    }
 
     if (actions.length === 0) {
         elements.actionsList.innerHTML = '';
-        if (formContainer) formContainer.style.display = 'block';
-        if (addBtn) addBtn.classList.add('hidden');
         return;
     }
 
